@@ -3,7 +3,8 @@
     "version": "1.0.0",
     "scripts": {
         "start-publisher": "nodemon publish",
-        "start-subscriber": "nodemon subscribe"
+        "start-subscriber": "nodemon subscribe",
+        "devStart" : "nodemon ./src/routes/Httptest.js"
     },
     "dependencies": {
         "express": "^4.18.2",
