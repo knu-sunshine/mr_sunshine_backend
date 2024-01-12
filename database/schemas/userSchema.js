@@ -16,3 +16,5 @@ const userSchema = new mongoose.Schema({
       unique: true,
     },
   });
+
+module.exports = userSchema;
