@@ -20,6 +20,10 @@ const deviceSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  deviceStatus:{
+    type: Boolean,
+    required: true,
+  },
   deviceCategory: {
     type: String,
     enum: deviceCategories,
@@ -27,6 +31,4 @@ const deviceSchema = new mongoose.Schema({
   },
 });
 
-const Device = mongoose.model('Device', deviceSchema);
-
-module.exports = Device;
+module.exports = deviceSchema;
