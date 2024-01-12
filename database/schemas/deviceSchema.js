@@ -20,6 +20,10 @@ const deviceSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  deviceStatus:{
+    type: Boolean,
+    required: true,
+  },
   deviceCategory: {
     type: String,
     enum: deviceCategories,
