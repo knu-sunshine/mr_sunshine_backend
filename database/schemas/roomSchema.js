@@ -16,4 +16,5 @@ const roomSchema = new mongoose.Schema({
       required: true,
     },
   });
-  
+
+module.exports = roomSchema;
