@@ -1,7 +1,0 @@
-{
-    "DEVICE_ID": "ABC",
-    "Target": {
-            "PIN_NUM": 1,
-            "STATE" : true
-    }
-}
