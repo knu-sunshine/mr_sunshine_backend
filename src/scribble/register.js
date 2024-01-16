@@ -57,12 +57,13 @@ app.post('/api/register', (req, res) => {
     if(isNew){
         registerDevice(DID);  //DID 등록
         waitForIoT(`${DID}`, 10000) // 10초 안에 메시지를 기다립니다.
-            .then(message =>  res.json({ message: '기기가 정상적으로 등록되었습니다.', data: DID })) //등록 성공하면 해당 메시지 출력
+            .then(message =>  {
+                if(isResolved){ //기기가 정상적으로 등록되었다면    
+                    console.log('db에 기기(DID 정보) 저장해야합니다.');
+                }
+                res.json({ message: '기기가 정상적으로 등록되었습니다.', data: DID })
+            }) //등록 성공하면 해당 메시지 출력
             .catch(error =>  res.json({ message: '잘못된 기기 id입니다.', data: DID })); //등록 실패하면 해당 메시지 출력
-        console.log(isResolved);
-            if(isResolved){ //기기가 정상적으로 등록되었다면    
-            console.log('db에 기기(DID 정보) 저장해야합니다.');
-        }
     }else{ //이미 등록된 기기이면 종료
         res.json({ message: '이미 등록된 기기입니다.', data: DID });
     }
