@@ -4,10 +4,11 @@
 // const publisher = mqtt.connect(`mqtt://${HOST}:${MQTT_PORT}`) //publsiher connection
 // const subscriber = mqtt.connect(`mqtt://${HOST}:${MQTT_PORT}`) //subscriber connection
 
-const HOST = "192.168.203.116" //chan's ip 
-const HTTP_PORT = 3000
+
 const express = require('express');
 const app = express();
+const HTTP_PORT = process.env.HTTP_PORT;
+const HOST = process.env.HOST;
 
 app.listen(HTTP_PORT, HOST, () => {
     console.log(`서버가 http://${HOST}:${HTTP_PORT} 에서 실행 중입니다.`);
