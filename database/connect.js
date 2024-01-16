@@ -3,6 +3,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const mongoURI = process.env.DB_URI;
+console.log(mongoURI);
 // Mongoose 연결
 mongoose.connect(mongoURI)
     .then(() => {
