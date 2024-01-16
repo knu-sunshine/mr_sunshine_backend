@@ -1,8 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const roomController = require('./Controller');
+const roomController = require('./homeController');
 
-// POST /home/createroom
 router.post('/addRoom', roomController.createRoom);
 router.get('/',roomController.getRoomList);
 router.get('/getSunriseTime',roomController.getSunriseTime);
