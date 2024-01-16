@@ -27,6 +27,10 @@ const deviceSchema = new mongoose.Schema({
     enum: deviceCategories,
     required: true,
   },
+  isdeviceOn:{
+    type:Boolean,
+    required:false,
+  }
 });
 
 module.exports = deviceSchema;
