@@ -17,9 +17,9 @@ const deviceValueSchema = new mongoose.Schema({
       max: 100
     },
     updateDate: {
-         type: Date, default: Date.now 
+         type: Date, 
+         default: Date.now 
     },
   });
 
-module.exports = deviceSchema;
-  
+module.exports = deviceValueSchema;
