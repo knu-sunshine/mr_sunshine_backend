@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const userSchema = require('../schema/roomSchema');
+const deviceSchema = require('../schema/deviceSchema');
 
 const Device = mongoose.model('Device', deviceSchema);
 

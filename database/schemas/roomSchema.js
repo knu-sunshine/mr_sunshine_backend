@@ -15,6 +15,10 @@ const roomSchema = new mongoose.Schema({
       type: String,
       required: true,
     },
+    isRoomLightOn: {
+      type: Boolean,
+      default: false,
+    }
   });
 
 module.exports = roomSchema;

@@ -16,10 +16,6 @@ const deviceSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  deviceValue: {
-    type: Number,
-    required: true,
-  },
   deviceStatus:{
     type: Boolean,
     required: true,
