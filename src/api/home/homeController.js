@@ -23,21 +23,23 @@ const getRoomList = async (req, res, next) => {
   }
 };
 
-const getSunriseTime = (req, res, next) => {
-  // 여기에 일출 시간을 얻는 기능 추가
-  // 어떻게 얻을지에 따라 구현이 달라질 수 있습니다.
+const getSunriseTime = async(req, res, next) => {
   try {
-    res.status(200).json({ sunriseTime: '07:00 AM' });
+    const sunriseTime =await homeService.getSunriseTime();
+    res.status(200).json(sunriseTime);
+    console.log("일출시간 : ",sunriseTime);
   } catch (error) {
     next(error);
   }
 };
 
-const getSunsetTime = (req, res, next) => {
+const getSunsetTime = async(req, res, next) => {
   // 여기에 일몰 시간을 얻는 기능 추가
   // 어떻게 얻을지에 따라 구현이 달라질 수 있습니다.
   try {
-    res.status(200).json({ sunsetTime: '06:00 PM' });
+    const sunsetTime =await homeService.getSunsetTime();
+    res.status(200).json(sunsetTime);
+    console.log("일몰시간 : ",sunsetTime);
   } catch (error) {
     next(error);
   }
@@ -47,7 +49,7 @@ const getSunsetTime = (req, res, next) => {
 router.post('/addroom', addRoom);
 router.get('/', getRoomList);
 router.get('/getsunrisetime', getSunriseTime);
-router.get('/gesSunsettime', getSunsetTime);
+router.get('/getsunsettime', getSunsetTime);
 
 // Error handling middleware
 router.use(errorHandler);

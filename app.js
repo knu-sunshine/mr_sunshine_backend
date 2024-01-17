@@ -19,7 +19,7 @@ const homeController = require('./src/api/home/homeController');
 //Controller Mapping
 app.use('/', homeController);
 
-//check server is runnign
+//check server is running
 app.listen(HTTP_PORT, HOST, () => {
     console.log(`server is on http://${HOST}:${HTTP_PORT}`);
 });

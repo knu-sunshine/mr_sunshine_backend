@@ -1,21 +1,40 @@
+const express = require('express');
+const router = express.Router();
+
 const Room = require('../../database/models/roomModel');
 const User = require('../../database/models/userModel');
+const errorHandler = require('../../middleware/errorHandler');
 
 //Basic Method
-const findUserByUserId = async (userId) => {
-  const user = await User.findOne({ userId }); // userId 필드를 사용하여 사용자를 찾음
-  return user;
+const findUserByUserId = async (userId,next) => {
+  try{
+    const user = await User.findOne({ userId }); // find one user using userId(not _Id in mongoDB)
+    return user;
+  }catch(error){
+    next(error);
+  }  
 };
 
+
+
+/**
+ * API LIST
+ */
+
+/**
+ * addRoom
+ * 
+ * @param {*} userId 
+ * @param {*} roomName 
+ * @returns { roomId, roomName}
+ */
 
 const addRoom = async (userId, roomName) => {
   const user = await findUserByUserId(userId);
   if (!user) {
     const error = new Error('User not found');
-    error.status = 404;
     throw error;
   }
-
 
   console.log("user = ", User);
 
@@ -32,16 +51,47 @@ const addRoom = async (userId, roomName) => {
   console.log("savedRoom = ",savedRoom);
 
   return {
-    roomId: savedRoom._id,
+    roomId: savedRoom.roomId,
     roomName: savedRoom.roomName,
   };
 };
 
+
+/**
+ * getRoomList
+ * @returns Room
+ */
+
 const getRoomList = async () => {
-  return await Room.find();
+  const user = await findUserByUserId(userId);
+  return user;
 };
+
+/**
+ * getSunriseTime
+ * @returns sunriseTime (Type : Date)
+ */
+
+const getSunriseTime = async () => {
+  const sunriseTime = Date.now();
+  return sunriseTime;
+};
+
+/**
+ * getRoomList
+ * @returns sunsetTime (Type : Date)
+ */
+
+const getSunsetTime = async () => {
+  const sunsetTime = Date.now();
+  return sunsetTime;
+};
+
+
 
 module.exports = {
   addRoom,
   getRoomList,
+  getSunriseTime,
+  getSunsetTime,
 };
