@@ -1,5 +1,5 @@
-const Room = require('../../../database/models/roomModel');
-const User = require('../../../database/models/userModel');
+const Room = require('../../database/models/roomModel');
+const User = require('../../database/models/userModel');
 
 //Basic Method
 const findUserByUserId = async (userId) => {
