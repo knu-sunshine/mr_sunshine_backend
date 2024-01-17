@@ -3,10 +3,23 @@ const User = require('../../database/models/userModel');
 
 //Basic Method
 const findUserByUserId = async (userId) => {
-  const user = await User.findOne({ userId }); // userId 필드를 사용하여 사용자를 찾음
+  const user = await User.findOne({ userId }); // find one user using userId(not _Id in mongoDB)
   return user;
 };
 
+
+
+/**
+ * API LIST
+ */
+
+/**
+ * addRoom
+ * 
+ * @param {*} userId 
+ * @param {*} roomName 
+ * @returns { roomId, roomName}
+ */
 
 const addRoom = async (userId, roomName) => {
   const user = await findUserByUserId(userId);
@@ -15,7 +28,6 @@ const addRoom = async (userId, roomName) => {
     error.status = 404;
     throw error;
   }
-
 
   console.log("user = ", User);
 
@@ -40,6 +52,8 @@ const addRoom = async (userId, roomName) => {
 const getRoomList = async () => {
   return await Room.find();
 };
+
+
 
 module.exports = {
   addRoom,
