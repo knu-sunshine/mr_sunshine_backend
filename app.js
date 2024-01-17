@@ -12,6 +12,12 @@ const client = mqtt.connect(`mqtt://${HOST}:${MQTT_PORT}`)
 //make express server 
 const express = require('express');
 const app = express();
+app.use(express.json())
+
+const homeController = require('./src/api/home/homeController');
+
+//Controller Mapping
+app.use('/', homeController);
 
 //check server is runnign
 app.listen(HTTP_PORT, HOST, () => {
@@ -21,4 +27,3 @@ app.listen(HTTP_PORT, HOST, () => {
 module.exports = { app,
     client
 };
-
