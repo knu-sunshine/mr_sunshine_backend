@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require('../connect')
 const deviceCategories = require('../constants/deviceCategories');
 const { v4: uuidv4 } = require('uuid');
 

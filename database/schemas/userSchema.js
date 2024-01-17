@@ -1,4 +1,4 @@
-const mongoose = require('connect')
+const mongoose = require('../connect')
 const { v4: uuidv4 } = require('uuid');
 
 const userSchema = new mongoose.Schema({

@@ -1,4 +1,4 @@
-const mongoose = require('connect')
+const mongoose = require('../connect');
 const { v4: uuidv4 } = require('uuid'); // uuid 패키지에서 v4 함수를 가져옴
 
 const roomSchema = new mongoose.Schema({

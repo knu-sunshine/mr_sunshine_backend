@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require('../connect');
 const { v4: uuidv4 } = require('uuid');
 
 const deviceValueSchema = new mongoose.Schema({

@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const roomSchema = require('../schema/roomSchema');
+const roomSchema = require('../schemas/roomSchema');
 
 const Room = mongoose.model('Room', roomSchema);
 
