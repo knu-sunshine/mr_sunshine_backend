@@ -1,8 +1,5 @@
-const mqtt2 = require('mqtt'); //import mqtt package
-const mqtt  = require('../../app');
+const mqtt  = require('../../../app');
 let isResolved = false;
-
-console.log("subscriber: ", mqtt.client);
 
 function waitForIoT(Device_ID, timeout) {
     return new Promise((resolve, reject) => {
