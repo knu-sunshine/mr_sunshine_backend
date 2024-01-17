@@ -1,15 +1,25 @@
-
-// const mqtt = require('mqtt'); //import mqtt package
-// const MQTT_PORT = 1883 //broker's port num
-// const publisher = mqtt.connect(`mqtt://${HOST}:${MQTT_PORT}`) //publsiher connection
-// const subscriber = mqtt.connect(`mqtt://${HOST}:${MQTT_PORT}`) //subscriber connection
-
-
-const express = require('express');
-const app = express();
+//port info
+const dotenv = require('dotenv');
+dotenv.config();
+const MQTT_PORT = process.env.MQTT_PORT;
 const HTTP_PORT = process.env.HTTP_PORT;
 const HOST = process.env.HOST;
 
+//mqtt connection
+const mqtt = require('mqtt'); 
+const client = mqtt.connect(`mqtt://${HOST}:${MQTT_PORT}`) 
+
+//make express server 
+const express = require('express');
+const app = express();
+
+//check server is runnign
 app.listen(HTTP_PORT, HOST, () => {
-    console.log(`서버가 http://${HOST}:${HTTP_PORT} 에서 실행 중입니다.`);
+    console.log(`server is on http://${HOST}:${HTTP_PORT}`);
 });
+
+module.exports = { app,
+    client
+};
+
+
