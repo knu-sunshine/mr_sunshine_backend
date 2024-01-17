@@ -1,9 +1,11 @@
-const roomService = require('../services/homeService');
+const express = require('express');
+const router = express.Router();
+const homeService = require('./homeService');
 
 const addRoom = async (req, res, next) => {
   try {
     const { userId, roomName } = req.body;
-    const result = await roomService.createRoom(userId, roomName);
+    const result = await homeService.createRoom(userId, roomName);
     res.status(201).json(result);
   } catch (error) {
     next(error);
@@ -12,7 +14,7 @@ const addRoom = async (req, res, next) => {
 
 const getRoomList = async (req, res, next) => {
   try {
-    const rooms = await roomService.getRoomList();
+    const rooms = await homeService.getRoomList();
     res.status(200).json(rooms);
   } catch (error) {
     next(error);
@@ -31,9 +33,9 @@ const getSunsetTime = (req, res) => {
   res.status(200).json({ sunsetTime: '06:00 PM' });
 };
 
-module.exports = {
-  addRoom,
-  getRoomList,
-  getSunriseTime,
-  getSunsetTime,
-};
+router.post('/addRoom', addRoom);
+router.get('/', getRoomList);
+router.get('/getSunriseTime', getSunriseTime);
+router.get('/getSunsetTime', getSunsetTime);
+
+module.exports = router;
