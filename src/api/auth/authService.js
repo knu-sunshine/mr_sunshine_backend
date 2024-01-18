@@ -2,7 +2,9 @@ const express = require('express');
 const router = express.Router();
 const User = require('../../database/models/userModel');
 
-
+/**
+ * basic method
+ */
 const getUserByEmail = async(userEmail) => {
     try {
       // User 모델을 사용하여 UserEmail과 일치하는 사용자를 찾음
@@ -26,7 +28,11 @@ const getUserByUserId = async(userId) => {
     }
 }
 
-
+/**
+ * 
+ * @param {*} googleToken 
+ * @returns 
+ */
 const signUp = async (googleToken) => {
     const OAuth_URL = `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${googleToken}`;
     console.log("oAuth_URL = ",OAuth_URL);  
@@ -41,15 +47,18 @@ const signUp = async (googleToken) => {
     console.log("result = ", result);
 
     let user = await getUserByEmail(result.email);
-
+    console.log(user);
     if(!user){ //if there no user.. make it!
-        user = {}
-        user.userName = result.name;
-        user.userEmail = result.email;
-        await user.save();
+        const newUser = new User({   
+            userName : result.name,
+            userEmail : result.email
+        });
+        await newUser.save();
         console.log("new User!!!!!@@@@@@@@@@@");
+        console.log("new User = ",newUser);
+        return newUser;
     }
-    
+    console.log("already in...");
     console.log("user = ", user);
     return user;
 };
