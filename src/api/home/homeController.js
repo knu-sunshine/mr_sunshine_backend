@@ -45,6 +45,8 @@ const getSunsetTime = async(req, res, next) => {
   }
 };
 
+
+
 // URL MAPPING
 router.post('/addroom', addRoom);
 router.get('/', getRoomList);
