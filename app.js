@@ -15,9 +15,11 @@ const app = express();
 app.use(express.json())
 
 const homeController = require('./src/api/home/homeController');
+const authController = require('./src/api/auth/authController');
 
 //Controller Mapping
 app.use('/', homeController);
+app.use('/auth',authController);
 
 //check server is running
 app.listen(HTTP_PORT, HOST, () => {

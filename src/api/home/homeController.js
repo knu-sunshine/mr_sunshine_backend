@@ -16,7 +16,8 @@ const addRoom = async (req, res, next) => {
 
 const getRoomList = async (req, res, next) => {
   try {
-    const rooms = await homeService.getRoomList();
+    userId = req.body.userId;
+    const rooms = await homeService.getRoomList(userId);
     res.status(200).json(rooms);
   } catch (error) {
     next(error);
