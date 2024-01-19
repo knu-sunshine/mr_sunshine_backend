@@ -17,6 +17,7 @@ app.use(express.json())
 const homeController = require('./src/api/home/homeController');
 const authController = require('./src/api/auth/authController');
 const roomController = require('./src/api/room/roomController');
+const deviceController = require('./src/api/device/deviceController');
 module.exports = { app,
     client
 };
@@ -25,6 +26,7 @@ module.exports = { app,
 app.use('/', homeController);
 app.use('/auth',authController);
 app.use('/room', roomController);
+app.use('/room/device',deviceController);
 
 //check server is running
 app.listen(HTTP_PORT, HOST, () => {
