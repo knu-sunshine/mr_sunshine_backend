@@ -14,16 +14,19 @@ const express = require('express');
 const app = express();
 app.use(express.json())
 
-const homeController = require('./src/api/home/homeController');
+module.exports = { app,
+    client
+};
 
+const homeController = require('./src/api/home/homeController');
+const roomController = require('./src/api/room/roomController');
 //Controller Mapping
 app.use('/', homeController);
+app.use('/', roomController);
 
 //check server is running
 app.listen(HTTP_PORT, HOST, () => {
     console.log(`server is on http://${HOST}:${HTTP_PORT}`);
 });
 
-module.exports = { app,
-    client
-};
+
