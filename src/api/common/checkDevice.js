@@ -26,7 +26,7 @@ const waitForIoT = (Device_ID, timeout) => {
         mqtt.client.subscribe(MQTT_TOPIC);
         mqtt.client.on('message', messageListener);
     });
-}
+};
 
 const checkDevice = async (DID) => {
     const MQTT_TOPIC = `check/${DID}`; //topic 이름

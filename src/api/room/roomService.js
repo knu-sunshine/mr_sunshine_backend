@@ -39,6 +39,21 @@ const checkDB_device = async (DID) => {
     }
 };
 
+const insertDeviceValue = async (DID, value) => {
+    try {
+        const valueInfo = [
+            {
+                deviceId: DID,
+                value: value
+            }
+        ];
+        await DeviceValue.insertMany(valueInfo);
+        console.log("On deviceValue model, data seeded successfully");
+    } catch (error) {
+        console.error("Error seeding deviceValue database:", error);
+    }
+};
+
 const findRoomName = async (RID) => {
     try {
         const name = await Room.findOne({ roomId: RID });
@@ -104,10 +119,10 @@ const addDevice = async (roomId, deviceId, deviceName) => {
         ];
         //기기를 디비에 등록 -> registerDB, Device 스키마
         try {
-            await Device.insertMany(deviceInfo);
+            await Device.insertMany(deviceRow);
             console.log("On device model, data seeded successfully");
         } catch (error) {
-            console.error("Error seeding database:", error);
+            console.error("Error seeding device database:", error);
         }
         //body에 돌려줄 내용 잘 정리해서 보내줌
         console.log("addDevice success");
@@ -139,7 +154,7 @@ const setRoomOn = async (roomId) => {
             if (device_value === null)
                 continue;
             if (await controlDeviceValue(device.deviceId, device_value, 100)) {// 각 기기에 대해 비동기 함수 실행
-                //registerDB
+                insertDeviceValue(device.deviceId, 100); //device_value에 새로운 row 추가
             } else {
                 console.log(`network error with IoT`)
                 const error = new Error('network error with IoT');
@@ -147,6 +162,9 @@ const setRoomOn = async (roomId) => {
                 throw error;
             }
         }
+        return {
+            result: "success"
+        };
     } else {
         console.log(`new roomid error`)
         const error = new Error('it should be registered');
@@ -156,7 +174,33 @@ const setRoomOn = async (roomId) => {
 };
 
 const setRoomOff = async (roomId) => {
+    //DB에서 해당하는 방 찾자
+    let statusOfDB_room = await checkDB_room(roomId); //DB에 RID가 있는지 체크
 
+    if (statusOfDB_room) {
+        let device_list = await findDevice(roomId); //기기 찾아옴 리스트로 정리
+        for (let device of device_list) {
+            let device_value = findCurrentDeviceValue(device.deviceId);
+            if (device_value === null)
+                continue;
+            if (await controlDeviceValue(device.deviceId, device_value, 0)) {// 각 기기에 대해 비동기 함수 실행
+                insertDeviceValue(device.deviceId, 0); //device_value에 새로운 row 추가
+            } else {
+                console.log(`network error with IoT`)
+                const error = new Error('network error with IoT');
+                error.status = 404;
+                throw error;
+            }
+        }
+        return {
+            result: "success"
+        };
+    } else {
+        console.log(`new roomid error`)
+        const error = new Error('it should be registered');
+        error.status = 404;
+        throw error;
+    }
 };
 
 const getDeviceList = async (roomId) => {
