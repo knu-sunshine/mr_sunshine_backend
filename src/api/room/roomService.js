@@ -4,16 +4,6 @@ const DeviceValue = require('../../database/models/deviceValueModel');
 const checkDevice = require('../common/checkDevice');
 const controlDeviceValue = require('../common/controlDeviceValue');
 
-const getRoomByRoomId = async(roomId) => {
-    try{
-        const room = await Room.findOne({roomId});
-        return room;
-    }catch(error) {
-        console.error(`Error finding user: ${error.message}`);
-        throw error;
-    }
-}
-
 //적절한 RID인지 확인
 const checkRoomID = async (DID) => {
     if (DID.length === 4 && (DID[0] === 'L' || DID[0] === 'C')) {
@@ -228,15 +218,17 @@ const getDeviceList = async (roomId) => {
 };
 
 const setAutoModeOn = async(roomId)=>{
-    let room = getRoomByRoomId(roomId);
-    room.isAutoMode = true;
-    return room;
+    //RID가 디비에 등록되었는지 check
+    //RID에 해당하는 device 리스트 가져오기
+    //AutoMode가 가능한 상태인지 check, checkDevice(); 그리고 device가 led, curtain, sensor 가 각각 1개인지 체크 필요
+    //Goal_value 해당 api에서 받거나 디비에 사전에 저장된 값을 가질지는 미정
+    //controlAutoMode를 호출 goalvalue와 device 리스트를 전달
 };
 
 const setAutoModeOff = async(roomId)=>{
-    let room = getRoomByRoomId(roomId);
-    room.isAutoMode = false;
-    return room;
+    //호출된 controlAutoMode를 break 걸어주는 메소드
+    //controlAutoMode는 콜백함수 -> 트리거를 여기서 호출해야 함
+    //automode의 마지막 값을 받아와서 그 값을 디비에 저장
 };
 
 module.exports = {
