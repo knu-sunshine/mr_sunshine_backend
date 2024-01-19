@@ -9,13 +9,15 @@ const signUp = async (req, res, next) => {
         console.log("signup require...");
         const googleToken = req.body.googleToken;
         console.log("googleToken = ",googleToken);
+        if(googleToken){
+            
+        }
         const user = await authService.signUp(googleToken);
         session.user = user;
 
         console.log("session = ",session);
 
         res.status(201).json(session);
-        console.log("res = ",res);
     } catch (error) {
       next(error);
     }
