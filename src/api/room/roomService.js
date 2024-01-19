@@ -136,11 +136,20 @@ const setRoomOn = async (roomId) => {
         let device_list = await findDevice(roomId); //기기 찾아옴 리스트로 정리
         for (let device of device_list) {
             let device_value = findCurrentDeviceValue(device.deviceId);
-            await controlDeviceValue(device.deviceId, device_value, 100); // 각 기기에 대해 비동기 함수 실행
+            if (device_value === null)
+                continue;
+            if (await controlDeviceValue(device.deviceId, device_value, 100)) {// 각 기기에 대해 비동기 함수 실행
+                //registerDB
+            } else {
+                console.log(`network error with IoT`)
+                const error = new Error('network error with IoT');
+                error.status = 404;
+                throw error;
+            }
         }
     } else {
-        console.log(`communicating IoT : ${isSuccess}`)
-        const error = new Error('there is a problem on IoT');
+        console.log(`new roomid error`)
+        const error = new Error('it should be registered');
         error.status = 404;
         throw error;
     }
