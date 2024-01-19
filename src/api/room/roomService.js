@@ -4,6 +4,16 @@ const DeviceValue = require('../../database/models/deviceValueModel');
 const checkDevice = require('../common/checkDevice');
 const controlDeviceValue = require('../common/controlDeviceValue');
 
+const getRoomByRoomId = async(roomId) => {
+    try{
+        const room = await Room.findOne({roomId});
+        return room;
+    }catch(error) {
+        console.error(`Error finding user: ${error.message}`);
+        throw error;
+    }
+}
+
 //적절한 RID인지 확인
 const checkRoomID = async (DID) => {
     if (DID.length === 4 && (DID[0] === 'L' || DID[0] === 'C')) {
@@ -217,10 +227,23 @@ const getDeviceList = async (roomId) => {
     }
 };
 
+const setAutoModeOn = async(roomId)=>{
+    let room = getRoomByRoomId(roomId);
+    room.isAutoMode = true;
+    return room;
+};
+
+const setAutoModeOff = async(roomId)=>{
+    let room = getRoomByRoomId(roomId);
+    room.isAutoMode = false;
+    return room;
+};
 
 module.exports = {
     addDevice,
     setRoomOn,
     setRoomOff,
+    setAutoModeOn,
+    setAutoModeOff,
     getDeviceList
 };

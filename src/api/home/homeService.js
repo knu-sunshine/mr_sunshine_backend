@@ -62,7 +62,7 @@ const addRoom = async (userId, roomName) => {
  * @returns Room
  */
 
-const getRoomList = async () => {
+const getRoomList = async (userId) => {
   const user = await findUserByUserId(userId);
   return user;
 };

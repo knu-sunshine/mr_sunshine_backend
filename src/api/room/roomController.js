@@ -48,11 +48,33 @@ const getDeviceList = async (req, res, next) => {
     }
 };
 
-router.post('/addDevice', addDevice)
+const setAutoModeOn = async (req,res,next) => {
+    try{
+        const { roomId } = req.body;
+        console.log(`roomID: ${roomId}`);
+        const result = await roomService.setAutoModeOn(roomId);
+        res.status(201).json();
+    } catch(error){
+        next(error);
+    }
+}
+
+const setAutoModeOff = async (req,res,next) => {
+    try{
+        const { roomId } = req.body;
+        console.log(`roomID: ${roomId}`);
+        const result = await roomService.setAutoModeOff(roomId);
+        res.status(201).json();
+    } catch(error){
+        next(error);
+    }
+}
+
+router.post('/addDevice', addDevice);
+router.post('/autoon',setAutoModeOn);
+router.post('/autooff',setAutoModeOff);
 router.post('/on', setRoomOn);
 router.post('/off', setRoomOff);
 router.get('/getDeviceList', getDeviceList);
-//router.post('/room/:room_id/autoon', setAutoModeOn);
-//router.post('/room/:room_id/autooff',setAutoModeOff);
 router.unsubscribe(errorHandler);
 module.exports = router;

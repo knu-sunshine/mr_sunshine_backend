@@ -14,14 +14,16 @@ const express = require('express');
 const app = express();
 app.use(express.json())
 
+const homeController = require('./src/api/home/homeController');
+const authController = require('./src/api/auth/authController');
+const roomController = require('./src/api/room/roomController');
 module.exports = { app,
     client
 };
 
-const homeController = require('./src/api/home/homeController');
-const roomController = require('./src/api/room/roomController');
 //Controller Mapping
 app.use('/', homeController);
+app.use('/auth',authController);
 app.use('/room', roomController);
 
 //check server is running
