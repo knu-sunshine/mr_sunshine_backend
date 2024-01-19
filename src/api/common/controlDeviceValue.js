@@ -1,6 +1,12 @@
 const mqtt = require('../../../app');
 let isResolved = false;
 
+//fucn -> 비동기 함수
+//L | C 에 따른 value값 처리 다르게 보내줘야함
+//C의 연결 상태 확인은 즉갑 대답이 오지만 control하는 경우 시간이 오래 걸린 다음에 
+//오기 때문에 ->true / false를 판단
+//max를 10초로 두고 타임아웃 걸어두자
+
 function waitForIoT(Device_ID, timeout) {
     return new Promise((resolve, reject) => {
         const MQTT_TOPIC = `result/${Device_ID}`;

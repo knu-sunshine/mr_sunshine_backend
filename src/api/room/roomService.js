@@ -1,5 +1,6 @@
 const Room = require('../../database/models/roomModel');
 const Device = require('../../database/models/deviceModel');
+const DeviceValue = require('../../database/models/deviceValueModel');
 const checkDevice = require('../common/checkDevice');
 const controlDeviceValue = require('../common/controlDeviceValue');
 
@@ -9,21 +10,31 @@ const checkRoomID = async (DID) => {
         return true;
     }
     return false;
-}
+};
 
 //DB를 check하는 함수
-const checkDB = async (RID, DID) => {
+const checkDB_room = async (RID) => {
     try {
-        // 데이터베이스에서 roomId가 RID인 문서 찾기
+        // 데이터베이스에서 roomId가 RID인 row 찾기
         const room = await Room.findOne({ roomId: RID });
+
+        // row가 존재하면 true, 그렇지 않으면 false 반환
+        return room != null;
+    } catch (error) {
+        console.error('checkDB_room, DB 조회 중 오류 발생:', error);
+        return false; // 오류 발생 시 false 반환
+    }
+};
+
+const checkDB_device = async (DID) => {
+    try {
         // device 디비에서 같은 did가 들어오는 경우를 check
         const device = await Device.findOne({ deviceId: DID });
         if (device)
             return false;
-        // 문서가 존재하면 true, 그렇지 않으면 false 반환
-        return room != null;
+        return true;
     } catch (error) {
-        console.error('checkDB, DB 조회 중 오류 발생:', error);
+        console.error('checkDB_device, DB 조회 중 오류 발생:', error);
         return false; // 오류 발생 시 false 반환
     }
 };
@@ -36,7 +47,7 @@ const findRoomName = async (RID) => {
         console.error('findRoomName, DB 조회 중 오류 발생:', error);
         return false; // 오류 발생 시 false 반환
     }
-}
+};
 
 const findDeviceCategory = async (DID) => {
     if (DID[0] === 'L') {
@@ -45,16 +56,41 @@ const findDeviceCategory = async (DID) => {
     else if (DID[0] === 'C') {
         return "Curtain";
     }
-}
+};
+
+const findDevice = async (RID) => {
+    try {
+        // MongoDB에서 해당 RID를 가진 장치들 찾기
+        const devices = await Device.find({ RID: RID });
+        return devices; // 찾은 장치 리스트 반환
+    } catch (error) {
+        console.error('장치 검색 중 오류 발생:', error);
+        return []; // 오류 발생 시 빈 리스트 반환
+    }
+};
+
+const findCurrentDeviceValue = async (DID) => {
+    try {
+        // MongoDB에서 해당 DID의 최신 value 찾기 (updateDate 내림차순으로 정렬)
+        const currentValues = await DeviceValue.find({ deviceId: DID })
+            .sort({ updateDate: -1 })
+            .limit(1);
+        return current_value; // 찾은 장치 리스트 반환
+    } catch (error) {
+        console.error('장치 검색 중 오류 발생:', error);
+        return null; // 오류 발생 시 빈 리스트 반환
+    }
+};
 
 const addDevice = async (roomId, deviceId, deviceName) => {
-    let statusOfDB = await checkDB(roomId, deviceId); //DB에 업로드할 때 아무 문제 없는지
+    let statusOfDB_room = await checkDB_room(roomId); //DB에 RID가 있는지 체크
+    let statusOfDB_device = await checkDB_device(deviceId); //DB에 DID가 새로운건지
     let statusOfRID = await checkRoomID(deviceId); //적절한 RID인지
     let statusOfDID = await checkDevice(deviceId); //DID가 연결되었는지
     let roomName = await findRoomName(roomId);
     let category = await findDeviceCategory(deviceId);
 
-    if (statusOfDB && statusOfRID && statusOfDID) {
+    if (statusOfDB && statusOfRID && statusOfDID & statusOfDB_device) {
         //디비에 아무 문제 없고, 적절한 RID이고, DID 연결되었으면
         const deviceRow = [
             {
@@ -85,69 +121,33 @@ const addDevice = async (roomId, deviceId, deviceName) => {
             roomName: roomName
         };
     } else {
-        console.log(`DB error : ${statusOfDB}, DID error : ${statusOfDID}, RID error : ${statusOfRID}`)
+        console.log(`IoT connection error: ${statusOfDID}, DB_room error : ${statusOfDB_room}, DB_device : ${statusOfDB_device}, RID error : ${statusOfRID}`);
         const error = new Error('adding device fail');
         error.status = 404;
         throw error;
     }
 };
 
-const setRoomLightOn = async (roomId, deviceId) => {
-    //DB에서 해당하는 방 & 기기 찾자
-    let isOn = true; //일단 있다고 가정 -> 디비 이슈 해결 후 진행
+const setRoomOn = async (roomId) => {
+    //DB에서 해당하는 방 찾자
+    let statusOfDB_room = await checkDB_room(roomId); //DB에 RID가 있는지 체크
 
-    if (isOn) {
-        //controlDeviceValue를 100으로 설정
-        let isSuccess = controlDeviceValue(deviceId, 100);
-        if (isSuccess) {
-            //디비에 해당 방 & 기기의 정보 등록
-            //updateDB(); ->  디비 이슈 해결 후 진행
-            //body에 돌려줄 내용 잘 정리해서 보내줌
-            console.log("setRoomLightOn success");
-            return {
-                result: "Success"
-            };
-        } else {
-            console.log(`communicating IoT : ${isSuccess}`)
-            const error = new Error('there is a problem on IoT');
-            error.status = 404;
-            throw error;
+    if (statusOfDB_room) {
+        let device_list = await findDevice(roomId); //기기 찾아옴 리스트로 정리
+        for (let device of device_list) {
+            let device_value = findCurrentDeviceValue(device.deviceId);
+            await controlDeviceValue(device.deviceId, device_value, 100); // 각 기기에 대해 비동기 함수 실행
         }
-    } else {//에러처리 - DB에 없으면
-        console.log(`Not exist on DB : ${isOn}`)
-        const error = new Error('room & device do not register');
+    } else {
+        console.log(`communicating IoT : ${isSuccess}`)
+        const error = new Error('there is a problem on IoT');
         error.status = 404;
         throw error;
     }
 };
 
-const setRoomLightOff = async (roomId, deviceId) => {
-    //DB에서 해당하는 방 & 기기 찾자
-    let isOn = true; //일단 있다고 가정 -> 디비 이슈 해결 후 진행
+const setRoomOff = async (roomId) => {
 
-    if (isOn) {
-        //controlDeviceValue를 100으로 설정
-        let isSuccess = controlDeviceValue(deviceId, 0);
-        if (isSuccess) {
-            //디비에 해당 방 & 기기의 정보 등록
-            //updateDB(); -> 디비 이슈 해결 후 진행
-            //body에 돌려줄 내용 잘 정리해서 보내줌
-            console.log("setRoomLightOff success");
-            return {
-                result: "Success"
-            };
-        } else {
-            console.log(`communicating IoT : ${isSuccess}`)
-            const error = new Error('there is a problem on IoT');
-            error.status = 404;
-            throw error;
-        }
-    } else {//에러처리 - DB에 없으면
-        console.log(`Not exist on DB : ${isOn}`)
-        const error = new Error('room & device do not register');
-        error.status = 404;
-        throw error;
-    }
 };
 
 const getDeviceList = async (roomId) => {
@@ -156,20 +156,20 @@ const getDeviceList = async (roomId) => {
     //디비 이슈해결되면 return에 result를 줄 수 있도록
     //result에 아무것도 없다면 에러 처리를 해야할듯!!
     return {
-		deviceId : "12345678-1234-5678-1234-567812345678",
-		currentStatus : 95,
-		ifDeviceOn : true,
-		wakeUpDegree : 60,
-		category : "light",
-		roomId : "12345678-1234-5678-1234-567812345678",
-		roomName : "livingRoom"
-	};
+        deviceId: "12345678-1234-5678-1234-567812345678",
+        currentStatus: 95,
+        ifDeviceOn: true,
+        wakeUpDegree: 60,
+        category: "light",
+        roomId: "12345678-1234-5678-1234-567812345678",
+        roomName: "livingRoom"
+    };
 };
 
 
 module.exports = {
     addDevice,
-    setRoomLightOn,
-    setRoomLightOff,
+    setRoomOn,
+    setRoomOff,
     getDeviceList
 };

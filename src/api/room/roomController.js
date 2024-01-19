@@ -15,22 +15,22 @@ const addDevice = async (req, res, next) => {
     }
 };
 
-const setRoomLightOn = async (req, res, next) => {
+const setRoomOn = async (req, res, next) => {
     try {
-        const { roomId, deviceId } = req.body;
-        console.log(`roomID: ${roomId}, deviceID: ${deviceId}`);
-        const result = await roomService.setRoomLightOn(roomId, deviceId);
+        const roomId = req.body;
+        console.log(`roomID: ${roomId}`);
+        const result = await roomService.setRoomOn(roomId);
         res.status(201).json(result);
     } catch (error) {
         next(error);
     }
 };
 
-const setRoomLightOff = async (req, res, next) => {
+const setRoomOff = async (req, res, next) => {
     try {
-        const { roomId, deviceId } = req.body;
-        console.log(`roomID: ${roomId}, deviceID: ${deviceId}`);
-        const result = await roomService.setRoomLightOff(roomId, deviceId);
+        const roomId = req.body;
+        console.log(`roomID: ${roomId}`);
+        const result = await roomService.setRoomOff(roomId);
         res.status(201).json(result);
     } catch (error) {
         next(error);
@@ -49,8 +49,8 @@ const getDeviceList = async (req, res, next) => {
 };
 
 router.post('/addDevice', addDevice)
-router.post('/lightOn', setRoomLightOn);
-router.post('/lightOff', setRoomLightOff);
+router.post('/on', setRoomOn);
+router.post('/off', setRoomOff);
 router.get('/getDeviceList', getDeviceList);
 //router.post('/room/:room_id/autoon', setAutoModeOn);
 //router.post('/room/:room_id/autooff',setAutoModeOff);
