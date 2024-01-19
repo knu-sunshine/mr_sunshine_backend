@@ -113,8 +113,35 @@ const setRoomLightOn = async (roomId, deviceId) => {
             error.status = 404;
             throw error;
         }
+    } else {//에러처리 - DB에 없으면
+        console.log(`Not exist on DB : ${isOn}`)
+        const error = new Error('room & device do not register');
+        error.status = 404;
+        throw error;
+    }
+};
 
+const setRoomLightOff = async (roomId, deviceId) => {
+    //DB에서 해당하는 방 & 기기 찾자
+    let isOn = true; //일단 있다고 가정 -> 디비 이슈 해결 후 진행
 
+    if (isOn) {
+        //controlDeviceValue를 100으로 설정
+        let isSuccess = controlDeviceValue(deviceId, 0);
+        if (isSuccess) {
+            //디비에 해당 방 & 기기의 정보 등록
+            //updateDB();
+            //body에 돌려줄 내용 잘 정리해서 보내줌
+            console.log("setRoomLightOff success");
+            return {
+                result: "Success"
+            };
+        } else {
+            console.log(`communicating IoT : ${isSuccess}`)
+            const error = new Error('there is a problem on IoT');
+            error.status = 404;
+            throw error;
+        }
     } else {//에러처리 - DB에 없으면
         console.log(`Not exist on DB : ${isOn}`)
         const error = new Error('room & device do not register');
@@ -126,5 +153,6 @@ const setRoomLightOn = async (roomId, deviceId) => {
 
 module.exports = {
     addDevice,
-    setRoomLightOn
+    setRoomLightOn,
+    setRoomLightOff
 };
