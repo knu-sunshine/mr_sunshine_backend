@@ -1,6 +1,7 @@
 const Room = require('../../database/models/roomModel');
 const Device = require('../../database/models/deviceModel');
 const checkDevice = require('../common/checkDevice');
+const controlDeviceValue = require('../common/controlDeviceValue');
 
 //적절한 RID인지 확인
 const checkRoomID = async (DID) => {
@@ -39,7 +40,7 @@ const findRoomName = async (RID) => {
 
 const findDeviceCategory = async (DID) => {
     if (DID[0] === 'L') {
-        return "Light";   
+        return "Light";
     }
     else if (DID[0] === 'C') {
         return "Curtain";
@@ -59,7 +60,7 @@ const addDevice = async (roomId, deviceId, deviceName) => {
             {
                 deviceId: deviceId,
                 roomId: roomId,
-                deviceName: deviceName, 
+                deviceName: deviceName,
                 deviceStatus: false,
                 deviceCategory: category,
                 isdeviceOn: false
@@ -73,7 +74,7 @@ const addDevice = async (roomId, deviceId, deviceName) => {
             console.error("Error seeding database:", error);
         }
         //body에 돌려줄 내용 잘 정리해서 보내줌
-        console.log("registerDB & return success result");
+        console.log("addDevice success");
         return {
             deviceId: deviceId,
             currentStatus: 0,
@@ -91,6 +92,39 @@ const addDevice = async (roomId, deviceId, deviceName) => {
     }
 };
 
+const setRoomLightOn = async (roomId, deviceId) => {
+    //DB에서 해당하는 방 & 기기 찾자
+    let isOn = true; //일단 있다고 가정 -> 디비 이슈 해결 후 진행
+
+    if (isOn) {
+        //controlDeviceValue를 100으로 설정
+        let isSuccess = controlDeviceValue(deviceId, 100);
+        if (isSuccess) {
+            //디비에 해당 방 & 기기의 정보 등록
+            //updateDB();
+            //body에 돌려줄 내용 잘 정리해서 보내줌
+            console.log("setRoomLightOn success");
+            return {
+                result: "Success"
+            };
+        } else {
+            console.log(`communicating IoT : ${isSuccess}`)
+            const error = new Error('there is a problem on IoT');
+            error.status = 404;
+            throw error;
+        }
+
+
+    } else {//에러처리 - DB에 없으면
+        console.log(`Not exist on DB : ${isOn}`)
+        const error = new Error('room & device do not register');
+        error.status = 404;
+        throw error;
+    }
+};
+
+
 module.exports = {
-    addDevice
+    addDevice,
+    setRoomLightOn
 };
