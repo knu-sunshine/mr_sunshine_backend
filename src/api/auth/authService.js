@@ -42,8 +42,11 @@ const signUp = async (googleToken) => {
         switch(data.status){
             case 200: return data.json();
             case 401: throw error;
+            case 500: throw error;
+            default: throw error;
         }
     });
+        
 
     let user = await getUserByEmail(result.email);
     console.log(user);
