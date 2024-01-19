@@ -4,7 +4,6 @@ const errorHandler = require('../../middleware/errorHandler');
 const session = require('express-session');
 const authService = require('./authService');
 
-
 const signUp = async (req, res, next) => {
     try {
         console.log("signup require...");
@@ -32,7 +31,8 @@ const logIn = async (req, res, next) => {
             res.status(401).json({ error: 'Unauthorized' });
         }
         else if(session.cookie.expires instanceof Date &&  session.cookie.expires - new Date() < 3600000) {
-
+            session.regenerate();
+            res.status(201).json(session);
         } 
         else {
             // session valid
