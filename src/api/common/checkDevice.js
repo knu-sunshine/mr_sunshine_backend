@@ -1,6 +1,7 @@
 const mqtt  = require('../../../app');
 let isResolved = false;
-
+//console.log("mqtt: ", mqtt);
+//console.log("mqtt client: ", mqtt.client);
 function waitForIoT(Device_ID, timeout) {
     return new Promise((resolve, reject) => {
         const MQTT_TOPIC = `response/${Device_ID}`; //받을 topic 이름
@@ -31,7 +32,7 @@ function checkDevice(DID) {
     const MQTT_TOPIC = `check/${DID}`; //topic 이름
     const message = { "check_about": "d" }; //보낼 메세지
     mqtt.client.publish(MQTT_TOPIC, JSON.stringify(message)); //iot에게 보낸다
-    waitForIoT(`${DID}`, 5000) // 5초 안에 메시지를 기다립니다.
+    return waitForIoT(`${DID}`, 5000) // 5초 안에 메시지를 기다립니다.
         .then(message => {
             console.log("Status of device is fine");
             return true;
