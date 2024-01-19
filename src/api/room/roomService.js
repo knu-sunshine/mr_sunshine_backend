@@ -204,19 +204,17 @@ const setRoomOff = async (roomId) => {
 };
 
 const getDeviceList = async (roomId) => {
-    //DB에서 roomId에 해당하는 Device들을 리스트에 담아서 return
-    //result = findList(roomId);
-    //디비 이슈해결되면 return에 result를 줄 수 있도록
-    //result에 아무것도 없다면 에러 처리를 해야할듯!!
-    return {
-        deviceId: "12345678-1234-5678-1234-567812345678",
-        currentStatus: 95,
-        ifDeviceOn: true,
-        wakeUpDegree: 60,
-        category: "light",
-        roomId: "12345678-1234-5678-1234-567812345678",
-        roomName: "livingRoom"
-    };
+    //DB에서 해당하는 방 찾자
+    let statusOfDB_room = await checkDB_room(roomId); //DB에 RID가 있는지 체크
+    if (statusOfDB_room) {
+        let device_list = await findDevice(roomId); //기기 찾아옴 리스트로 정리
+        return device_list;
+    } else {
+        console.log(`new roomid error`)
+        const error = new Error('it should be registered');
+        error.status = 404;
+        throw error;
+    }
 };
 
 
