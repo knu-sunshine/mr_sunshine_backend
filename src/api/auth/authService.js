@@ -44,7 +44,6 @@ const signUp = async (googleToken) => {
             case 401: throw error;
         }
     });
-    console.log("result = ", result);
 
     let user = await getUserByEmail(result.email);
     console.log(user);

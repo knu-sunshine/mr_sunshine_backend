@@ -15,7 +15,6 @@ const signUp = async (req, res, next) => {
         console.log("session = ",session);
 
         res.status(201).json(session);
-        console.log("res = ",res);
     } catch (error) {
       next(error);
     }
