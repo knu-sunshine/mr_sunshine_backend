@@ -101,7 +101,7 @@ const setRoomLightOn = async (roomId, deviceId) => {
         let isSuccess = controlDeviceValue(deviceId, 100);
         if (isSuccess) {
             //디비에 해당 방 & 기기의 정보 등록
-            //updateDB();
+            //updateDB(); ->  디비 이슈 해결 후 진행
             //body에 돌려줄 내용 잘 정리해서 보내줌
             console.log("setRoomLightOn success");
             return {
@@ -130,7 +130,7 @@ const setRoomLightOff = async (roomId, deviceId) => {
         let isSuccess = controlDeviceValue(deviceId, 0);
         if (isSuccess) {
             //디비에 해당 방 & 기기의 정보 등록
-            //updateDB();
+            //updateDB(); -> 디비 이슈 해결 후 진행
             //body에 돌려줄 내용 잘 정리해서 보내줌
             console.log("setRoomLightOff success");
             return {
@@ -150,9 +150,26 @@ const setRoomLightOff = async (roomId, deviceId) => {
     }
 };
 
+const getDeviceList = async (roomId) => {
+    //DB에서 roomId에 해당하는 Device들을 리스트에 담아서 return
+    //result = findList(roomId);
+    //디비 이슈해결되면 return에 result를 줄 수 있도록
+    //result에 아무것도 없다면 에러 처리를 해야할듯!!
+    return {
+		deviceId : "12345678-1234-5678-1234-567812345678",
+		currentStatus : 95,
+		ifDeviceOn : true,
+		wakeUpDegree : 60,
+		category : "light",
+		roomId : "12345678-1234-5678-1234-567812345678",
+		roomName : "livingRoom"
+	};
+};
+
 
 module.exports = {
     addDevice,
     setRoomLightOn,
-    setRoomLightOff
+    setRoomLightOff,
+    getDeviceList
 };
