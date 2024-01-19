@@ -1,4 +1,3 @@
-const deviceCategories = ['Light','Curtain', 'Sensor'];
-//we made Category by Enum because of Scalability
+const deviceCategories = ['Light','Curtain','Sensor'];
 
 module.exports = deviceCategories;
