@@ -3,6 +3,7 @@ const Device = require('../../database/models/deviceModel');
 const DeviceValue = require('../../database/models/deviceValueModel');
 const checkDevice = require('../common/checkDevice');
 const controlDeviceValue = require('../common/controlDeviceValue');
+const controlAutoMode = require('../common/controlAutoMode');
 
 //적절한 RID인지 확인
 const checkRoomID = async (DID) => {
@@ -13,7 +14,7 @@ const checkRoomID = async (DID) => {
 };
 
 //DB를 check하는 함수
-const checkDB_room = async (RID) => {
+const checkDB_room_old = async (RID) => {
     try {
         // 데이터베이스에서 roomId가 RID인 row 찾기
         const room = await Room.findOne({ roomId: RID });
@@ -26,7 +27,7 @@ const checkDB_room = async (RID) => {
     }
 };
 
-const checkDB_device = async (DID) => {
+const checkDB_device_new = async (DID) => {
     try {
         // device 디비에서 같은 did가 들어오는 경우를 check
         const device = await Device.findOne({ deviceId: DID });
@@ -97,9 +98,23 @@ const findCurrentDeviceValue = async (DID) => {
     }
 };
 
+const getDeviceList = async (roomId) => {
+    //DB에서 해당하는 방 찾자
+    let statusOfDB_room = await checkDB_room_new(roomId); //DB에 RID가 있는지 체크
+    if (statusOfDB_room) {
+        let device_list = await findDevice(roomId); //기기 찾아옴 리스트로 정리
+        return device_list;
+    } else {
+        console.log(`new roomid error`)
+        const error = new Error('it should be registered');
+        error.status = 404;
+        throw error;
+    }
+};
+
 const addDevice = async (roomId, deviceId, deviceName) => {
-    let statusOfDB_room = await checkDB_room(roomId); //DB에 RID가 있는지 체크
-    let statusOfDB_device = await checkDB_device(deviceId); //DB에 DID가 새로운건지
+    let statusOfDB_room = await checkDB_room_old(roomId); //DB에 RID가 있는지 체크
+    let statusOfDB_device = await checkDB_device_new(deviceId); //DB에 DID가 새로운건지
     let statusOfRID = await checkRoomID(deviceId); //적절한 RID인지
     let statusOfDID = await checkDevice(deviceId); //DID가 연결되었는지
     let roomName = await findRoomName(roomId);
@@ -145,7 +160,7 @@ const addDevice = async (roomId, deviceId, deviceName) => {
 
 const setRoomOn = async (roomId) => {
     //DB에서 해당하는 방 찾자
-    let statusOfDB_room = await checkDB_room(roomId); //DB에 RID가 있는지 체크
+    let statusOfDB_room = await checkDB_room_new(roomId); //DB에 RID가 있는지 체크
 
     if (statusOfDB_room) {
         let device_list = await findDevice(roomId); //기기 찾아옴 리스트로 정리
@@ -175,7 +190,7 @@ const setRoomOn = async (roomId) => {
 
 const setRoomOff = async (roomId) => {
     //DB에서 해당하는 방 찾자
-    let statusOfDB_room = await checkDB_room(roomId); //DB에 RID가 있는지 체크
+    let statusOfDB_room = await checkDB_room_new(roomId); //DB에 RID가 있는지 체크
 
     if (statusOfDB_room) {
         let device_list = await findDevice(roomId); //기기 찾아옴 리스트로 정리
@@ -203,29 +218,37 @@ const setRoomOff = async (roomId) => {
     }
 };
 
-const getDeviceList = async (roomId) => {
-    //DB에서 해당하는 방 찾자
-    let statusOfDB_room = await checkDB_room(roomId); //DB에 RID가 있는지 체크
-    if (statusOfDB_room) {
+const setAutoModeOn = async (roomId) => {
+    //DB check
+    let statusOfDB_room = await checkDB_room_new(roomId); //DB에 RID가 있는지 체크
+    let statusOfDB_device = await checkDB_device_old(roomId); //DBdp RID에 해당하는 Device에 Sensor 있는지 체크 & sensor 제외 Device가 1개 이상인지 체크 필요 
+
+    if (statusOfDB_room && statusOfDB_device) {
         let device_list = await findDevice(roomId); //기기 찾아옴 리스트로 정리
-        return device_list;
+        for (let device of device_list) {
+            let statusOfDevice = checkDevice(device.deviceId); //각 Device가 연결되었는지 check
+            if (!statusOfDevice) {
+                console.log('devices are not ready, checkDevice returns false');
+                const error = new Error('devices are not ready');
+                error.status = 404;
+                throw error;
+            }
+        }
+        await controlAutoMode(device_list);
+
+        return {
+            result: "success"
+        };
+        
     } else {
-        console.log(`new roomid error`)
-        const error = new Error('it should be registered');
+        console.log(`room_DB: ${statusOfDB_room}, device_DB: ${statusOfDB_device}`);
+        const error = new Error('no info about room or device');
         error.status = 404;
         throw error;
     }
 };
 
-const setAutoModeOn = async(roomId)=>{
-    //RID가 디비에 등록되었는지 check
-    //RID에 해당하는 device 리스트 가져오기
-    //AutoMode가 가능한 상태인지 check, checkDevice(); 그리고 device가 led, curtain, sensor 가 각각 1개인지 체크 필요
-    //Goal_value 해당 api에서 받거나 디비에 사전에 저장된 값을 가질지는 미정
-    //controlAutoMode를 호출 goalvalue와 device 리스트를 전달
-};
-
-const setAutoModeOff = async(roomId)=>{
+const setAutoModeOff = async (roomId) => {
     //호출된 controlAutoMode를 break 걸어주는 메소드
     //controlAutoMode는 콜백함수 -> 트리거를 여기서 호출해야 함
     //automode의 마지막 값을 받아와서 그 값을 디비에 저장

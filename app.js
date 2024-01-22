@@ -19,7 +19,7 @@ const roomController = require('./src/api/room/roomController');
 const deviceController = require('./src/api/device/deviceController');
 module.exports = { app,
     client
-};2
+};
 
 //Controller Mapping
 app.use('/', homeController);
