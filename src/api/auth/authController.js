@@ -3,7 +3,7 @@ const router = express.Router();
 const errorHandler = require('../../middleware/errorHandler');
 const session = require('express-session');
 const authService = require('./authService');
-const { GoogleTokenError } = require('../error/auth');
+const { GoogleTokenError } = require('../error/authError');
 
 const signUp = async (req, res, next) => {
   try {
@@ -16,7 +16,7 @@ const signUp = async (req, res, next) => {
         }
         session.user = user;
         console.log("session = ",session);
-        res.status(201).json(session);
+        res.send({"session":{...session}});
     } catch (GoogleTokenError) {
       next(GoogleTokenError);
     } 
@@ -24,17 +24,20 @@ const signUp = async (req, res, next) => {
 
 const logIn = async (req, res, next) => {
     try {
-        const session = req.session;
+        const session = req.body.session;
         
         if (session.cookie.expires instanceof Date && new Date() > session.cookie.expires) {
+            console.log("session is unauthorized!");
             // session expire
             res.status(401).json({ result: "fail", error: 'Unauthorized' });
         }
         else if(session.cookie.expires instanceof Date &&  session.cookie.expires - new Date() < 3600000) {
             session.regenerate();
+            console.log("session regenerate!");
             res.status(201).json(session);
         } 
         else {
+            console.log("session is valid!");
             // session valid
             res.status(201).json(session);
           }
