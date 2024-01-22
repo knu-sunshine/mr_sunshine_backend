@@ -1,6 +1,5 @@
 const Room = require('../../database/models/roomModel');
 const Device = require('../../database/models/deviceModel');
-const DeviceValue = require('../../database/models/deviceValueModel');
 const checkDevice = require('../common/checkDevice');
 const controlDeviceValue = require('../common/controlDeviceValue');
 

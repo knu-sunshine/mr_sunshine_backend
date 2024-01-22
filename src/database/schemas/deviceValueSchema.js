@@ -9,7 +9,7 @@ const deviceValueSchema = new mongoose.Schema({
       unique: true,
     },
     deviceId: { 
-      type: mongoose.Schema.Types.ObjectId,
+      type: String,
       ref: 'Device',
     },
     value: {
