@@ -3,23 +3,23 @@ const router = express.Router();
 const errorHandler = require('../../middleware/errorHandler');
 const session = require('express-session');
 const authService = require('./authService');
+const { GoogleTokenError } = require('../error/authError');
 
 const signUp = async (req, res, next) => {
-    try {
+  try {
         console.log("signup require...");
         const googleToken = req.body.googleToken;
         console.log("googleToken = ",googleToken);
-        if(googleToken){
-
-        }
         const user = await authService.signUp(googleToken);
+        if(!user){
+          throw GoogleTokenError
+        }
         session.user = user;
         console.log("session = ",session);
-
         res.status(201).json(session);
-    } catch (error) {
-      next(error);
-    }
+    } catch (GoogleTokenError) {
+      next(GoogleTokenError);
+    } 
 };
 
 const logIn = async (req, res, next) => {
