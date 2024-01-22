@@ -3,7 +3,7 @@ const Device = require('../../database/models/deviceModel');
 const DeviceValue = require('../../database/models/deviceValueModel');
 const checkDevice = require('../common/checkDevice');
 const controlDeviceValue = require('../common/controlDeviceValue');
-const controlAutoMode = require('../common/controlAutoMode');
+const autoMode = require('../common/controlAutoMode');
 
 //적절한 RID인지 확인
 const checkRoomID = async (DID) => {
@@ -36,6 +36,22 @@ const checkDB_device_new = async (DID) => {
         return true;
     } catch (error) {
         console.error('checkDB_device, DB 조회 중 오류 발생:', error);
+        return false; // 오류 발생 시 false 반환
+    }
+};
+
+const checkDB_device_old = async (RID) => {
+    try {
+        const devices = await Device.find({ roomId: RID });
+        const hasSensor = devices.some(device => Device.deviceCategory === 'Sensor');
+        if (hasSensor) {
+            const hasDevice = devices.some(device => Device.deviceCategory !== 'Sensor');
+            if (hasDevice)
+                return true;
+        }
+        return false;
+    } catch (error) {
+        console.error('DB 조회 중 오류 발생:', error);
         return false; // 오류 발생 시 false 반환
     }
 };
@@ -234,12 +250,12 @@ const setAutoModeOn = async (roomId) => {
                 throw error;
             }
         }
-        await controlAutoMode(device_list);
+        await autoMode.controlAutoMode(device_list);
 
         return {
             result: "success"
         };
-        
+
     } else {
         console.log(`room_DB: ${statusOfDB_room}, device_DB: ${statusOfDB_device}`);
         const error = new Error('no info about room or device');
@@ -249,9 +265,10 @@ const setAutoModeOn = async (roomId) => {
 };
 
 const setAutoModeOff = async (roomId) => {
-    //호출된 controlAutoMode를 break 걸어주는 메소드
-    //controlAutoMode는 콜백함수 -> 트리거를 여기서 호출해야 함
-    //automode의 마지막 값을 받아와서 그 값을 디비에 저장
+    const devices = await autoMode.stopAutoMode();
+    for (let device of devices) {
+        insert(device.id, device.value); //automode의 마지막 값을 받아와서 그 값을 디비에 저장
+    }
 };
 
 module.exports = {
