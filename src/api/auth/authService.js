@@ -70,7 +70,8 @@ const signUp = async (googleToken,next) => {
 
 const logIn = async (userId) => {
     const user = getUserByUserId(userId);
-    return user;
+    if(user == null) return 401; 
+    return 200;
 }
 
 module.exports = {
