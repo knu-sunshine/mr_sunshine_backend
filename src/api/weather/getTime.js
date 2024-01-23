@@ -12,7 +12,7 @@ const apiUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=$
 
 let sunrise = null;
 let sunset = null;
-
+let isSunRise = false;
 axios.get(apiUrl)
   .then(response => {
     const weatherData = response.data;
@@ -20,16 +20,37 @@ axios.get(apiUrl)
     const sunsetTimestamp = weatherData.sys.sunset * 1000;
     const sunriseDate = new Date(sunriseTimestamp);
     const sunsetDate = new Date(sunsetTimestamp);
-
+    const now = new Date.now;
     const options = { timeZone: 'Asia/Kolkata' };
     sunrise = sunriseDate.toLocaleString('en-US', options);
     sunset = sunsetDate.toLocaleString('en-US', options);
+    
+    if(now > sunsetDate || now<sunriseDate){
+        isSunRise = true;
+    }
+    else{
+        isSunRise = false;
+    }
 
-    console.log('일출시간 :', sunrise);
-    console.log('일몰시간 :', sunset);
+    //일출시
+    if(isSunRise == true){
+        response.json({
+            "isSunRise": isSunRise,
+            "time": sunrise
+        });
+    }
+
+    //일몰시
+    else{
+        response.json({
+            isSunRise: isSunRise,
+            "time": sunrise
+        });
+    }
+    
   })
   .catch(error => {
-    console.error('날씨 정보를 가져오는 도중 에러 발생:', error.message);
+    console.error('시간 정보를 가져오는 도중 에러 발생:', error.message);
   });
 
 module.exports = {
