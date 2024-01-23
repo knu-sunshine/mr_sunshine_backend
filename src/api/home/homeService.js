@@ -36,7 +36,7 @@ const addRoom = async (userId, roomName) => {
     throw error;
   }
 
-  console.log("user = ", User);
+  console.log("user = ", user);
 
   const newRoom = new Room({
     userId,

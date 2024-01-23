@@ -8,7 +8,7 @@ const setWakeUpValue = async (req, res, next) => {
     try {
         const { deviceId, value} = req.body;
         console.log(`deviceId: ${deviceId} , value: ${value}`);
-        const result = await roomService.setWakeUpValue(deviceId,value);
+        const result = await deviceService.setWakeUpValue(deviceId,value);
         res.status(201).json(result);
     } catch (error) {
         next(error);
