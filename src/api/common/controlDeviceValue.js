@@ -47,9 +47,9 @@ const waitForIoT = (Device_ID, timeout) => {
 };
 
 const controlDeviceValue = (DID, current_value, goal_value) => {
-    console.log(`DID: ${DID}, current_value: ${current_value}, goal_value: ${goal_value}`);
+   // console.log(`DID: ${DID}, current_value: ${current_value}, goal_value: ${goal_value}`);
     let value = setValue(DID, current_value, goal_value); //value값 지정 led이냐 curtain에 따른 value 달라야함
-    console.log(`DID: ${DID}, value: ${value}`);
+    //console.log(`DID: ${DID}, value: ${value}`);
     const MQTT_TOPIC = `control/${DID}`; //topic 이름
     const message = { "device_value": value }; //보낼 메세지
     mqtt.client.publish(MQTT_TOPIC, JSON.stringify(message)); //iot에게 보낸다

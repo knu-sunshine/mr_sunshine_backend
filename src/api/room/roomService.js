@@ -192,6 +192,10 @@ const setRoomOn = async (roomId) => {
         let device_list = await findDevice(roomId); //기기 찾아옴 리스트로 정리
         //console.log(device_list);
         for (let device of device_list) {
+            if(!checkDevice(device.deviceId)){
+                console.log(`${device.deviceId} is not connected`);
+                continue;
+            }
             let device_value = await findCurrentDeviceValue(device.deviceId);
             if (device_value === null)
                 continue;

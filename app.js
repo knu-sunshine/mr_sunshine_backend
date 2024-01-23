@@ -24,9 +24,9 @@ const deviceController = require('./src/api/device/deviceController');
 
 //Controller Mapping
 app.use('/', homeController);
-app.use('/auth',authController);
+app.use('/auth', authController);
 app.use('/room', roomController);
-app.use('/room/device',deviceController);
+app.use('/device', deviceController);
 
 //check server is running
 app.listen(HTTP_PORT, HOST, () => {
