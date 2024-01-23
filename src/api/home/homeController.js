@@ -1,7 +1,20 @@
 const express = require('express');
 const router = express.Router();
 const homeService = require('./homeService');
+const axios = require('axios');
 const errorHandler = require('../../middleware/errorHandler');
+
+router.use(errorHandler);
+
+const apiKey = '10d59d5eaa8bf98b71b534f684e4b15e';
+const lat = 12.97;
+const lon = 77.59;
+const apiUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}`;
+
+let sunrise = null;
+let sunset = null;
+let isSunRise = false;
+
 
 const addRoom = async (req, res, next) => {
   try {
@@ -16,7 +29,7 @@ const addRoom = async (req, res, next) => {
 
 const getRoomList = async (req, res, next) => {
   try {
-    console.log("getROomList");
+    console.log("getRoomList");
     userId = req.body.userId;
     const rooms = await homeService.getRoomList(userId);
     res.status(200).json(rooms);
@@ -25,35 +38,53 @@ const getRoomList = async (req, res, next) => {
   }
 };
 
-const getSunriseTime = async(req, res, next) => {
-  try {
-    const sunriseTime =await homeService.getSunriseTime();
-    res.status(200).json(sunriseTime);
-    console.log("일출시간 : ",sunriseTime);
-  } catch (error) {
-    next(error);
-  }
-};
+router.get('/home/sun', (req, res) => {
+  axios.get(apiUrl)
+    .then(response => {
+      const weatherData = response.data;
+      const sunriseTimestamp = weatherData.sys.sunrise * 1000;
+      const sunsetTimestamp = weatherData.sys.sunset * 1000;
+      const sunriseDate = new Date(sunriseTimestamp);
+      const sunsetDate = new Date(sunsetTimestamp);
+      const now = new Date();
+      const options = { timeZone: 'Asia/Kolkata' };
+      sunrise = sunriseDate.toLocaleString('en-US', options);
+      sunset = sunsetDate.toLocaleString('en-US', options);
 
-const getSunsetTime = async(req, res, next) => {
-  // 여기에 일몰 시간을 얻는 기능 추가
-  // 어떻게 얻을지에 따라 구현이 달라질 수 있습니다.
-  try {
-    const sunsetTime =await homeService.getSunsetTime();
-    res.status(200).json(sunsetTime);
-    console.log("일몰시간 : ",sunsetTime);
-  } catch (error) {
-    next(error);
-  }
-};
+      if (now > sunsetDate || now < sunriseDate) {
+        isSunRise = true;
+      } else {
+        isSunRise = false;
+      }
+
+      //일출시
+      if (isSunRise) {
+        res.json({
+          "isSunRise": isSunRise,
+          "time": sunrise
+        });
+      } else {
+        //일몰시
+        res.json({
+          "isSunRise": isSunRise,
+          "time": sunset
+        });
+      }
+    })
+    .catch(error => {
+      console.error('시간 정보를 가져오는 도중 에러 발생:', error.message);
+      // 에러 발생 시 에러 메시지를 JSON 형식으로 응답
+      res.status(500).json({ error: error.message });
+    });
+});
+
+
 
 
 
 // URL MAPPING
 router.post('/addroom', addRoom);
 router.get('/', getRoomList);
-router.get('/getsunrisetime', getSunriseTime);
-router.get('/getsunsettime', getSunsetTime);
 
 // Error handling middleware
 router.use(errorHandler);
