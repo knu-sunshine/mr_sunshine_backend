@@ -125,7 +125,7 @@ const findCurrentDeviceValue = async (DID) => {
 
 const getDeviceList = async (roomId) => {
     //DB에서 해당하는 방 찾자
-    let statusOfDB_room = await checkDB_room_new(roomId); //DB에 RID가 있는지 체크
+    let statusOfDB_room = await checkDB_room_old(roomId); //DB에 RID가 있는지 체크
     if (statusOfDB_room) {
         let device_list = await findDevice(roomId); //기기 찾아옴 리스트로 정리
         return device_list;
