@@ -13,14 +13,13 @@ const express = require('express');
 const app = express();
 app.use(express.json())
 
-module.exports = { app,
-    client
-};
-
 const homeController = require('./src/api/home/homeController');
 const authController = require('./src/api/auth/authController');
 const roomController = require('./src/api/room/roomController');
 const deviceController = require('./src/api/device/deviceController');
+module.exports = { app,
+    client
+};2
 
 //Controller Mapping
 app.use('/', homeController);
@@ -32,5 +31,4 @@ app.use('/room/device',deviceController);
 app.listen(HTTP_PORT, HOST, () => {
     console.log(`server is on http://${HOST}:${HTTP_PORT}`);
 });
-
 
