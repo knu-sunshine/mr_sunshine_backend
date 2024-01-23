@@ -1,9 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const errorHandler = require('../../middleware/errorHandler');
+const bodyParser = require('body-parser');
 const session = require('express-session');
 const authService = require('./authService');
 const { GoogleTokenError } = require('../error/authError');
+
+router.use(bodyParser.json());
 
 const signUp = async (req, res, next) => {
   try {
@@ -16,7 +19,7 @@ const signUp = async (req, res, next) => {
         }
         session.user = user;
         console.log("session = ",session);
-        res.send({"session":{...session}});
+        res.status(201).send({"session":{...session}});
     } catch (GoogleTokenError) {
       next(GoogleTokenError);
     } 
@@ -24,14 +27,16 @@ const signUp = async (req, res, next) => {
 
 const logIn = async (req, res, next) => {
     try {
+        console.log("logIn require.....");
+        console.log("reqBody : ",req.body);
         const session = req.body.session;
-        
-        if (session.cookie.expires instanceof Date && new Date() > session.cookie.expires) {
+        console.log("세션은!~ : ",session);
+        if (session.cookie.expires instanceof Date && new Date(Date.now()) > session.cookie.expires) {
             console.log("session is unauthorized!");
             // session expire
             res.status(401).json({ result: "fail", error: 'Unauthorized' });
         }
-        else if(session.cookie.expires instanceof Date &&  session.cookie.expires - new Date() < 3600000) {
+        else if(session.cookie.expires instanceof Date &&  session.cookie.expires - new Date(Date.now()) < 3600000) {
             session.regenerate();
             console.log("session regenerate!");
             res.status(201).json(session);
@@ -48,7 +53,7 @@ const logIn = async (req, res, next) => {
 
 // URL MAPPING
 router.post('/signup', signUp);
-router.get('/login',logIn);
+router.post('/login',logIn);
 
 // 세션 미들웨어 설정
 router.use(
@@ -58,6 +63,7 @@ router.use(
       saveUninitialized: true, // 초기화되지 않은 세션을 저장소에 저장할지 여부
       rolling: true,
       cookie: {
+        expires:  new Date(Date.now() + 2 * 60 * 60 * 1000), //2시간 만료
         secure: false, // HTTPS를 통해서만 세션을 전송할지 여부 (운영 환경에서는 true로 설정하는 것이 좋음)
         maxAge: 60000, // 세션의 유효 시간 (밀리초 단위)
       },
