@@ -17,7 +17,7 @@ const addDevice = async (req, res, next) => {
 
 const setRoomOn = async (req, res, next) => {
     try {
-        const roomId = req.body;
+        const { roomId } = req.body;
         console.log(`roomID: ${roomId}`);
         const result = await roomService.setRoomOn(roomId);
         res.status(201).json(result);
@@ -28,7 +28,7 @@ const setRoomOn = async (req, res, next) => {
 
 const setRoomOff = async (req, res, next) => {
     try {
-        const roomId = req.body;
+        const { roomId } = req.body;
         console.log(`roomID: ${roomId}`);
         const result = await roomService.setRoomOff(roomId);
         res.status(201).json(result);
@@ -39,7 +39,7 @@ const setRoomOff = async (req, res, next) => {
 
 const getDeviceList = async (req, res, next) => {
     try {
-        const roomId = req.body;
+        const { roomId } = req.body;
         console.log(`roomID: ${roomId}`);
         const result = await roomService.getDeviceList(roomId);
         res.status(201).json(result);
@@ -61,7 +61,7 @@ const setAutoModeOn = async (req,res,next) => {
 
 const setAutoModeOff = async (req,res,next) => {
     try{
-        const { roomId } = req.body;
+        const { roomId }  = req.body;
         console.log(`roomID: ${roomId}`);
         const result = await roomService.setAutoModeOff(roomId);
         res.status(201).json();
@@ -71,8 +71,8 @@ const setAutoModeOff = async (req,res,next) => {
 }
 
 router.post('/addDevice', addDevice);
-router.post('/autoon',setAutoModeOn);
-router.post('/autooff',setAutoModeOff);
+router.post('/autoOn',setAutoModeOn);
+router.post('/autoOff',setAutoModeOff);
 router.post('/on', setRoomOn);
 router.post('/off', setRoomOff);
 router.get('/getDeviceList', getDeviceList);

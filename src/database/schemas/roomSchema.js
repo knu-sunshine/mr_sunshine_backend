@@ -24,6 +24,12 @@ const roomSchema = new mongoose.Schema({
     isAutoMode: {
       type: Boolean,
       default: false,
+    },
+    lightValue: {
+      type: Number,
+      required: true,
+      min: 0,
+      max: 100
     }
   });
 
