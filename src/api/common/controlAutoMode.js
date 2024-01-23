@@ -1,64 +1,88 @@
+const DeviceValue = require('../../database/models/deviceValueModel');
 const mqtt = require('../../../app');
 const controlDeviceValue = require('./controlDeviceValue');
 const goalValue = 80;
 let autoModeActive = true;
 
-const stopAutoMode = async() => {
+const findSensor = async (devices) => {
+    //devices에서 sensor인 기기만 return
+    return devices.find(device => device.category === "Sensor");
+};
+
+const findDevices = async (devices) => {
+    return devices.find(device => device.category !== "Sensor");
+};
+
+const findCurrentDeviceValue = async (DID) => {
+    try {
+        // MongoDB에서 해당 DID의 최신 value 찾기 (updateDate 내림차순으로 정렬)
+        const currentValues = await DeviceValue.find({ deviceId: DID })
+            .sort({ updateDate: -1 })
+            .limit(1);
+        return current_value; // 찾은 장치 리스트 반환
+    } catch (error) {
+        console.error('장치 검색 중 오류 발생:', error);
+        return null; // 오류 발생 시 빈 리스트 반환
+    }
+};
+
+const insertDeviceValue = async (DID, value) => {
+    try {
+        const valueInfo = [
+            {
+                deviceId: DID,
+                value: value
+            }
+        ];
+        await DeviceValue.insertMany(valueInfo);
+        console.log("On deviceValue model, data seeded successfully");
+    } catch (error) {
+        console.error("Error seeding deviceValue database:", error);
+    }
+};
+
+const stopAutoMode = async () => {
     autoModeActive = false;
     console.log("Auto mode has been stopped.");
-    //멈춘 후 어떻게 정보를 가져올지 고민...
 };
 
-const controlAutoMode = async(devices) => {
-    while(autoModeActive){
-        const SID = findSensor(devices); //toppic 호출을 위한 SID 필요 
-        const deviceList = findDevices(devices); //sensor를 제외한 기기 리스트 필요
-        const MQTT_TOPIC = `sensor/${SID}`;
+const controlAutoMode = async (devices) => {
+    const SID = await findSensor(devices);
+    const deviceList = await findDevices(devices);
+    const MQTT_TOPIC = `sensor/${SID}`;
 
-        const messageHandler = (topic, message) => {
-            try {
-                 const parsedMessage = JSON.parse(message.toString());
-                 for(device of deviceList){
-                    let deviceValue = findCurrentDeviceValue(device.deviceId); //현재 디비에 등록된 value값을 알고 있어야 함
-                    if(parsedMessage.sensor_value > goal)
-                        controlDeviceValue(device.deviceId, deviceValue, deviceValue-1); //센서값이 크므로 밝기를 줄여야 함
-                    else if(parsedMessage.sensor_value < goal)
-                        controlDeviceValue(device.deviceId, deviceValue, deviceValue+1); //센서값이 작으므로 밝키를 키워야 함
-                    else
-                        continue;
-                 }
-            } catch (error) {
-                console.log("subscribing sensor has an error");
+    const messageHandler = async (topic, message) => {
+        if (!autoModeActive) return; // 자동 모드가 비활성화된 경우 바로 반환
+
+        try {
+            const parsedMessage = JSON.parse(message.toString());
+            for (let device of deviceList) {
+                let deviceValue = await findCurrentDeviceValue(device.deviceId); // 비동기 처리
+                if (parsedMessage.sensor_value > goal)
+                    await controlDeviceValue(device.deviceId, deviceValue, deviceValue - 1);
+                else if (parsedMessage.sensor_value < goal)
+                    await controlDeviceValue(device.deviceId, deviceValue, deviceValue + 1);
             }
-        };
-        mqtt.client.subscribe(MQTT_TOPIC);
-        mqtt.client.on('meesage', messageHandler);
+        } catch (error) {
+            console.error("Error in message handling:", error);
+        }
+    };
+
+    mqtt.client.subscribe(MQTT_TOPIC);
+    mqtt.client.on('message', messageHandler);
+
+    while (autoModeActive) {
+        await new Promise(resolve => setTimeout(resolve, 1000)); // 1초마다 확인
     }
-    mqtt.client.unsubscribe(MQTT_TOPIC);  
+
+    for (let device of deviceList) {
+        let deviceValue = await findCurrentDeviceValue(device.deviceId); // 현재 기기 값 가져오기
+        await insertDeviceValue(device.deviceId, deviceValue); // DB에 상태 저장
+    }
+
+    mqtt.client.unsubscribe(MQTT_TOPIC);
+    mqtt.client.off('message', messageHandler); // 이벤트 리스너 제거
 };
-
-// 이벤트 리스너 설정
-document.addEventListener('click', () => {
-    // 조건 확인
-    if (checkTriggerCondition()) {
-        console.log("트리거 조건 만족, 콜백 중단");
-        // 이벤트 리스너 제거
-        document.removeEventListener('click', myCallback);
-    } else {
-        // 조건 미달시 콜백 함수 실행
-        myCallback();
-    }
-});
-// 콜백 함수 등록 및 중단
-// 해당 로직에서는 콜백 함수 , 트리거 , 이벤트 리스너가 필요
-// 그러므로 중지 요청이 들어오면 막을 수 있음
-// 콜백 함수 정의 밑에 예시 참고
-// goal_value와 device 기기를 받아옴
-// 먼저 sensor 토픽을 subscribe 받아옴
-// 조도 센서 값과 goal_value를 같게 해주기 위해
-// 무한 반복으로 +- 연산해줘서 controldevice해줌
-// 트리거 요청이 들어올 때까지 계속 반복
-
 
 module.exports = {
     controlAutoMode,
