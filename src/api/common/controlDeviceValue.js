@@ -1,7 +1,7 @@
 const mqtt = require('../../../app');
 let isResolved = false;
 
-const setValue = async (DID, current_value, goal_value) => {
+const setValue = (DID, current_value, goal_value) => {
     if(DID[0] === 'C'){
         return goal_value - current_value;
     }   
@@ -9,7 +9,7 @@ const setValue = async (DID, current_value, goal_value) => {
         return goal_value;
 };
 
-const waitForIoT = async (Device_ID, timeout) => {
+const waitForIoT = (Device_ID, timeout) => {
     return new Promise((resolve, reject) => {
         const MQTT_TOPIC = `result/${Device_ID}`;
 
@@ -46,14 +46,14 @@ const waitForIoT = async (Device_ID, timeout) => {
     });
 };
 
-const controlDeviceValue = async(DID, current_value, goal_value) => {
+const controlDeviceValue = (DID, current_value, goal_value) => {
     console.log(`DID: ${DID}, current_value: ${current_value}, goal_value: ${goal_value}`);
-    let value = await setValue(DID, current_value, goal_value); //value값 지정 led이냐 curtain에 따른 value 달라야함
+    let value = setValue(DID, current_value, goal_value); //value값 지정 led이냐 curtain에 따른 value 달라야함
     console.log(`DID: ${DID}, value: ${value}`);
     const MQTT_TOPIC = `control/${DID}`; //topic 이름
     const message = { "device_value": value }; //보낼 메세지
     mqtt.client.publish(MQTT_TOPIC, JSON.stringify(message)); //iot에게 보낸다
-    return await waitForIoT(`${DID}`, 10000) // 5초 안에 메시지를 기다립니다.
+    return waitForIoT(`${DID}`, 10000) // 5초 안에 메시지를 기다립니다.
         .then(message => {
             console.log("Control of device is success");
             return true;

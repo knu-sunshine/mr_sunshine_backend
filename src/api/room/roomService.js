@@ -195,7 +195,7 @@ const setRoomOn = async (roomId) => {
             let device_value = await findCurrentDeviceValue(device.deviceId);
             if (device_value === null)
                 continue;
-            if (await controlDeviceValue(device.deviceId, device_value, 100)) {// 각 기기에 대해 비동기 함수 실행
+            if (controlDeviceValue(device.deviceId, device_value, 100)) {// 각 기기에 대해 비동기 함수 실행
                 await insertDeviceValue(device.deviceId, 100); //device_value에 새로운 row 추가
             } else {
                 console.log(`network error with IoT`)
@@ -225,7 +225,7 @@ const setRoomOff = async (roomId) => {
             let device_value = await findCurrentDeviceValue(device.deviceId);
             if (device_value === null)
                 continue;
-            if (await controlDeviceValue(device.deviceId, device_value, 0)) {// 각 기기에 대해 비동기 함수 실행
+            if (controlDeviceValue(device.deviceId, device_value, 0)) {// 각 기기에 대해 비동기 함수 실행
                 await insertDeviceValue(device.deviceId, 0); //device_value에 새로운 row 추가
             } else {
                 console.log(`network error with IoT`)
