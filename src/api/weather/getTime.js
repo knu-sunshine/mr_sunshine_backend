@@ -1,16 +1,18 @@
 const express = require('express');
 const router = express.Router();
 const axios = require('axios');
-errorHandler = require('../../middleware/errorHandler');
+const errorHandler = require('../../middleware/errorHandler');
 
-// Error handling middleware
 router.use(errorHandler);
 
-const apiKey = '10d59d5eaa8bf98b71b534f684e4b15e'; // 여기에 발급받은 API 키를 입력하세요
-const lat = 12.97; 
-const lon = 77.59; //Bengaluru
+const apiKey = '10d59d5eaa8bf98b71b534f684e4b15e';
+const lat = 12.97;
+const lon = 77.59;
 const apiUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}`;
-console.log("날씨 get");
+
+let sunrise = null;
+let sunset = null;
+
 axios.get(apiUrl)
   .then(response => {
     const weatherData = response.data;
@@ -20,16 +22,17 @@ axios.get(apiUrl)
     const sunsetDate = new Date(sunsetTimestamp);
 
     const options = { timeZone: 'Asia/Kolkata' };
-    const Sunrise = sunriseDate.toLocaleString('en-US', options);
-    const Sunset = sunsetDate.toLocaleString('en-US', options);
+    sunrise = sunriseDate.toLocaleString('en-US', options);
+    sunset = sunsetDate.toLocaleString('en-US', options);
 
-    console.log('일출시간 :', Sunrise);
-    console.log('일몰시간 :', Sunset);
-    
+    console.log('일출시간 :', sunrise);
+    console.log('일몰시간 :', sunset);
   })
   .catch(error => {
     console.error('날씨 정보를 가져오는 도중 에러 발생:', error.message);
   });
 
-
-
+module.exports = {
+  sunrise,
+  sunset
+};
