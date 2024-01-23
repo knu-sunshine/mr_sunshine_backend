@@ -20,14 +20,16 @@ axios.get(apiUrl)
     const sunsetDate = new Date(sunsetTimestamp);
 
     const options = { timeZone: 'Asia/Kolkata' };
-    const indiaSunrise = sunriseDate.toLocaleString('en-US', options);
-    const indiaSunset = sunsetDate.toLocaleString('en-US', options);
+    const Sunrise = sunriseDate.toLocaleString('en-US', options);
+    const Sunset = sunsetDate.toLocaleString('en-US', options);
 
-    console.log('일출시간 :', indiaSunrise);
-    console.log('일몰시간 :', indiaSunset);
+    console.log('일출시간 :', Sunrise);
+    console.log('일몰시간 :', Sunset);
     
   })
   .catch(error => {
     console.error('날씨 정보를 가져오는 도중 에러 발생:', error.message);
   });
+
+
 
