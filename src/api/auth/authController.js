@@ -8,7 +8,7 @@ const { GoogleTokenError } = require('../error/authError');
 
 router.use(bodyParser.json());
 
-// 세션 미들웨어 설정
+/*// 세션 미들웨어 설정
 router.use(
   session({
     secret: 'secretkey', // 세션을 서명하기 위한 키, 보안 상의 이유로 랜덤한 문자열 사용 권장
@@ -21,7 +21,7 @@ router.use(
       maxAge: 60000, // 세션의 유효 시간 (밀리초 단위)
     },
   })
-);
+);*/
 
 const signUp = async (req, res, next) => {
   try {
