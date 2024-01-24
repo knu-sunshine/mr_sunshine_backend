@@ -20,8 +20,8 @@ const addRoom = async (req, res, next) => {
   try {
     const { userId, roomName } = req.body;
     console.log("userId : ",userId);
-    const result = await homeService.addRoom(userId, roomName);
-    res.status(201).json(result);
+    const room = await homeService.addRoom(userId, roomName);
+    res.status(201).json(room);
   } catch (error) {
     next(error);
   }
@@ -30,7 +30,8 @@ const addRoom = async (req, res, next) => {
 const getRoomList = async (req, res, next) => {
   try {
     console.log("getRoomList");
-    userId = req.body.userId;
+    const userId = req.query.userId;
+    console.log(userId);
     const rooms = await homeService.getRoomList(userId);
     res.status(200).json(rooms);
   } catch (error) {
@@ -84,7 +85,7 @@ const getSunTime = async(req, res) => {
 
 // URL MAPPING
 router.post('/addroom', addRoom);
-router.get('/', getRoomList);
+router.get('/getroomlist', getRoomList);
 router.get('/home/sun', getSunTime);
 
 // Error handling middleware

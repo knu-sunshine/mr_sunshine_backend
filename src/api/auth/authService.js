@@ -34,7 +34,6 @@ const getUserByUserId = async(userId) => {
  */
 const signUp = async (googleToken,next) => {
     try{const OAuth_URL = `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${googleToken}`;
-        console.log("oAuth_URL = ",OAuth_URL);
 
         const result = await fetch(OAuth_URL)
         .then((data)=>{
@@ -70,7 +69,7 @@ const signUp = async (googleToken,next) => {
 
 const logIn = async (userId) => {
     const user = getUserByUserId(userId); 
-    return user;
+    return user;s
 }
 
 module.exports = {

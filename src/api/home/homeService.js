@@ -15,6 +15,16 @@ const findUserByUserId = async (userId,next) => {
   }  
 };
 
+const findRoomsByUserId = async(userId,next) => {
+  try{
+    const rooms = await Room.find({ userId });
+    console.log("rooms = ",rooms);
+    return rooms;
+  }catch(error){
+    next(error);
+  }
+};
+
 
 
 /**
@@ -46,25 +56,23 @@ const addRoom = async (userId, roomName) => {
   });
 
   const savedRoom = await newRoom.save();
-  await user.save();
+  //await user.save();
 
   console.log("savedRoom = ",savedRoom);
 
-  return {
-    roomId: savedRoom.roomId,
-    roomName: savedRoom.roomName,
-  };
+  return savedRoom;
 };
 
 
 /**
  * getRoomList
- * @returns Room
+ * @param userId
+ * @returns rooms
  */
 
 const getRoomList = async (userId) => {
-  const user = await findUserByUserId(userId);
-  return user;
+  const rooms = await findRoomsByUserId(userId);
+  return rooms;
 };
 
 /**
