@@ -1,7 +1,13 @@
+const LATITUDE= 12.9715987;
+const LONGITUDE= 77.5945627;
+const SUNRISE_URL= `https://api.sunrisesunset.io/json?lat=${LATITUDE}&lng=${LONGITUDE}`;
+const axios = require('axios');
+const momnet = require('moment');
 const express = require('express');
 const router = express.Router();
 const deviceService = require('./deviceService');
 const errorHandler = require('../../middleware/errorHandler');
+const moment = require('moment');
 
 const turnOnDevice = async (req, res, next) => {
     //DID를 입력 받고 해당 DID의 device를 on 시킨다.
@@ -86,6 +92,24 @@ const turnOffWakeUp = async (req, res, next) => {
         next(error);
     }
 };
+
+const scheduleWakeUp = (sunriseTime) => {
+    const now = new Date();
+    const sunrise = moment(sunriseTime, 'h:mm:ss A').toDate();
+    const delay = sunrise.getTime() - now.getTime();
+    console.log(`일출까지 ${delay}밀리초 남았습니다.`);
+    if (delay > 0) {
+        setTimeout(deviceService.wakeUp, delay);
+    } else {
+        console.log('오늘의 일출 시간은 이미 지났습니다.');
+    }
+}
+
+deviceService.getSunriseTime().then(sunriseTime => {
+    if (sunriseTime) {
+        scheduleWakeUp(sunriseTime);
+    }
+});
 
 router.post('/on', turnOnDevice);
 router.post('/off', turnOffDevice);

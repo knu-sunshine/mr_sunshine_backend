@@ -262,11 +262,53 @@ const turnOffWakeUp = async (deviceId) => {
     };
 };
 
+const getSunriseTime = async () => {
+    try {
+        const devices = Device.find({ isWakeUpOn: true });
+        if (devices) {
+            const response = await axios.get(SUNRISE_URL);
+            // API 응답에서 일출 시간 추출
+            const sunriseTime = response.data.results.sunrise;
+            return sunriseTime; // 일출 시간을 Date 객체로 변환
+        } else {
+            console.log("no devices that are isWakeUpOn true");
+            return null;
+        }
+    } catch (error) {
+        console.error('일출 시간 조회 중 오류:', error);
+        return null;
+    }
+};
+
+const wakeUp = () => {
+    //DB에서 isWakeUpOn이 true인 DID를 찾아서 wakeUpValue를 설정한다.
+    try {
+        const devices = Device.find({ isWakeUpOn: true });
+
+        devices.forEach(device => {
+            let currentValue = findCurrentValue(device.deviceId);
+            if (controlDeviceValue(device.deviceId, currentValue, device.wakeUpValue)) {
+                insertDeviceValue(device.deviceId, device.wakeUpValue);
+            } else {
+                console.log(`network error with IoT`)
+                const error = new Error('network error with IoT');
+                error.status = 404;
+                throw error;
+            }
+        });
+
+    } catch (error) {
+        console.error('wakeUp, checkDB_device, DB 조회 중 오류 발생:', error);
+    }
+};
+
 module.exports = {
     turnOnDevice,
     turnOffDevice,
     setDeviceValue,
     setWakeUpValue,
     turnOnWakeUp,
-    turnOffWakeUp
+    turnOffWakeUp,
+    getSunriseTime,
+    wakeUp
 };
