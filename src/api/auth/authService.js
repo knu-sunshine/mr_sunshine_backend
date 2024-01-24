@@ -69,9 +69,8 @@ const signUp = async (googleToken,next) => {
 };
 
 const logIn = async (userId) => {
-    const user = getUserByUserId(userId);
-    if(user == null) return 401; 
-    return 200;
+    const user = getUserByUserId(userId); 
+    return user;
 }
 
 module.exports = {
