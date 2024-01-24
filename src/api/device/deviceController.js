@@ -39,6 +39,7 @@ const setDeviceValue = async (req, res, next) => {
         const { deviceId, value } = req.body;
         console.log(`deviceId: ${deviceId}, value: ${value}`);
         const result = await deviceService.setDeviceValue(deviceId, value);
+
         res.status(201).json(result);
     } catch (error) {
         next(error);

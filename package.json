@@ -4,7 +4,9 @@
     "scripts": {
         "start-publisher": "nodemon publish",
         "start-subscriber": "nodemon subscribe",
-        "devStart": "nodemon app.js"
+        "devStart": "nodemon app.js",
+        "seedStart": "nodemon seedData.js",
+        "test": "nodemon src/api/weather/getTime.js"
     },
     "dependencies": {
         "axios": "^1.6.5",
