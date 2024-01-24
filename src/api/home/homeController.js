@@ -20,8 +20,8 @@ const addRoom = async (req, res, next) => {
   try {
     const { userId, roomName } = req.body;
     console.log("userId : ",userId);
-    const result = await homeService.addRoom(userId, roomName);
-    res.status(201).json(result);
+    const room = await homeService.addRoom(userId, roomName);
+    res.status(201).json(room);
   } catch (error) {
     next(error);
   }
@@ -30,7 +30,8 @@ const addRoom = async (req, res, next) => {
 const getRoomList = async (req, res, next) => {
   try {
     console.log("getRoomList");
-    userId = req.body.userId;
+    const userId = req.query.userId;
+    console.log(userId);
     const rooms = await homeService.getRoomList(userId);
     res.status(200).json(rooms);
   } catch (error) {
@@ -38,7 +39,7 @@ const getRoomList = async (req, res, next) => {
   }
 };
 
-router.get('/home/sun', (req, res) => {
+const getSunTime = async(req, res) => {
   axios.get(apiUrl)
     .then(response => {
       const weatherData = response.data;
@@ -57,14 +58,14 @@ router.get('/home/sun', (req, res) => {
         isSunRise = false;
       }
 
-      //일출시
+      //when sun rise
       if (isSunRise) {
         res.json({
           "isSunRise": isSunRise,
           "time": sunrise
         });
       } else {
-        //일몰시
+      //when sun set
         res.json({
           "isSunRise": isSunRise,
           "time": sunset
@@ -76,7 +77,7 @@ router.get('/home/sun', (req, res) => {
       // 에러 발생 시 에러 메시지를 JSON 형식으로 응답
       res.status(500).json({ error: error.message });
     });
-});
+};
 
 
 
@@ -84,7 +85,8 @@ router.get('/home/sun', (req, res) => {
 
 // URL MAPPING
 router.post('/addroom', addRoom);
-router.get('/', getRoomList);
+router.get('/getroomlist', getRoomList);
+router.get('/home/sun', getSunTime);
 
 // Error handling middleware
 router.use(errorHandler);

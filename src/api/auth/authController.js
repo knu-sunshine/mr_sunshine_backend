@@ -35,7 +35,7 @@ const signUp = async (req, res, next) => {
         //session.user = user;
         //session.expires = new Date(Date.now() + 2 * 60 * 60 * 1000)
         //console.log("session = ",session);
-        res.status(201).json(user.userId);
+        res.status(201).json(user);
     } catch (GoogleTokenError) {
       next(GoogleTokenError);
     } 
@@ -47,9 +47,14 @@ const logIn = async (req, res, next) => {
         console.log("reqBody : ",req.body);
         const userId = req.body.userId;
 
-        const status = await authService.logIn(userId)
+        const user = await authService.logIn(userId)
+        if(!user){
+          res.status(401).json(user);
+        }
+        else{
+          res.status(201).json(user);
+        }
 
-        res.status(status).json();
     }catch(error){
       next(error);
     }
