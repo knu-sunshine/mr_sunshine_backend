@@ -31,6 +31,11 @@ const deviceSchema = new mongoose.Schema({
     type:Boolean,
     required:false,
   },
+  isWakeUpOn: {
+    type: Boolean,
+    default: false,
+    required: false,
+  },
   wakeUpValue:{
     type: Number,
     required: false,

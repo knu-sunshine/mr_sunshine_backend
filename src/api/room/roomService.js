@@ -124,7 +124,7 @@ const findCurrentDeviceValue = async (DID) => {
 
 const getDeviceList = async (roomId) => {
     //DB에서 해당하는 방 찾자
-    let statusOfDB_room = await checkDB_room_new(roomId); //DB에 RID가 있는지 체크
+    let statusOfDB_room = await checkDB_room_old(roomId); //DB에 RID가 있는지 체크
     if (statusOfDB_room) {
         let device_list = await findDevice(roomId); //기기 찾아옴 리스트로 정리
         return device_list;
@@ -191,10 +191,14 @@ const setRoomOn = async (roomId) => {
         let device_list = await findDevice(roomId); //기기 찾아옴 리스트로 정리
         //console.log(device_list);
         for (let device of device_list) {
+            if(!checkDevice(device.deviceId)){
+                console.log(`${device.deviceId} is not connected`);
+                continue;
+            }
             let device_value = await findCurrentDeviceValue(device.deviceId);
             if (device_value === null)
                 continue;
-            if (await controlDeviceValue(device.deviceId, device_value, 100)) {// 각 기기에 대해 비동기 함수 실행
+            if (controlDeviceValue(device.deviceId, device_value, 100)) {// 각 기기에 대해 비동기 함수 실행
                 await insertDeviceValue(device.deviceId, 100); //device_value에 새로운 row 추가
             } else {
                 console.log(`network error with IoT`)
@@ -224,7 +228,7 @@ const setRoomOff = async (roomId) => {
             let device_value = await findCurrentDeviceValue(device.deviceId);
             if (device_value === null)
                 continue;
-            if (await controlDeviceValue(device.deviceId, device_value, 0)) {// 각 기기에 대해 비동기 함수 실행
+            if (controlDeviceValue(device.deviceId, device_value, 0)) {// 각 기기에 대해 비동기 함수 실행
                 await insertDeviceValue(device.deviceId, 0); //device_value에 새로운 row 추가
             } else {
                 console.log(`network error with IoT`)
