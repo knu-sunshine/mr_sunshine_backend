@@ -37,11 +37,12 @@ const checkDB_device_new = async (DID) => {
 const checkDB_device_old = async (RID) => {
     try {
         const devices = await Device.find({ roomId: RID });
-        const hasSensor = devices.some(device => Device.deviceCategory === 'Sensor');
-        if (hasSensor.length > 0) {
-            const hasDevice = devices.some(device => Device.deviceCategory !== 'Sensor');
-            if (hasDevice.length > 0)
+        const hasSensor = devices.some(device => device.deviceCategory === 'Sensor');
+        if (hasSensor) {
+            const hasDevice = devices.some(device => device.deviceCategory !== 'Sensor');
+            if (hasDevice) {
                 return true;
+            }
         }
         return false;
     } catch (error) {
@@ -65,17 +66,33 @@ const insertDeviceValue = async (DID, value) => {
     }
 };
 
-const updateDeviceStatus = async (DID, value) => {
+const updateDevice = async (DID, value) => {
     try {
-        const device = await Device.findOne({ DID });
+        const device = await Device.findOne({ deviceId: DID });
         if (device) {
             device.deviceStatus = value;
+            device.isdeviceOn = value === 0 ? false : true;
             await device.save();
         } else {
             console.log(`Device not found for deviceId: ${DID}`);
         }
     } catch (error) {
         console.error(`Error updating device status: ${error}`);
+        throw error;
+    }
+};
+
+const updateRoom = async (RID, value) => {
+    try {
+        const room = await Room.findOne({ roomId: RID });
+        if (room) {
+            room.isRoomLightOn = value === 0 ? false : true;
+            await room.save();
+        } else {
+            console.log(`Room not found for roomId: ${RID}`);
+        }
+    } catch (error) {
+        console.error(`Error updating room light status: ${error}`);
         throw error;
     }
 };
@@ -120,6 +137,7 @@ const findCurrentDeviceValue = async (DID) => {
 
 const getDeviceList = async (roomId) => {
     let statusOfDB_room = await checkDB_room_old(roomId); //Check RID is on room DB or not
+    console.log("getdevice");
     if (statusOfDB_room) {
         let device_list = await findDevice(roomId); //Find device_list except sensor
         for (let device of device_list) {
@@ -189,7 +207,8 @@ const setRoomOn = async (roomId) => {
                 }
                 if (controlDeviceValue(device.deviceId, device_value, 100)) { //Control device to 100
                     await insertDeviceValue(device.deviceId, 100); //Insert new row to DB
-                    await updateDeviceStatus(device.deviceId, 100); //Update row
+                    await updateDevice(device.deviceId, 100); //Update Device
+                    await updateRoom(roomId, 100); //Update Room
                     console.log("setRoomOn success");
                 } else {
                     console.log(`network error with IoT`)
@@ -228,7 +247,8 @@ const setRoomOff = async (roomId) => {
                 }
                 if (controlDeviceValue(device.deviceId, device_value, 0)) { //Control device to 100
                     await insertDeviceValue(device.deviceId, 0); //Insert new row to DB
-                    await updateDeviceStatus(device.deviceId, 0); //Update row
+                    await updateDevice(device.deviceId, 100); //Update Device
+                    await updateRoom(roomId, 100); //Update Room
                     console.log("setRoomOff success");
                 } else {
                     console.log(`network error with IoT`)
@@ -255,7 +275,7 @@ const setRoomOff = async (roomId) => {
 };
 
 const setAutoModeOn = async (roomId) => {
-    let statusOfDB_room = await checkDB_room_old(roomId); //DB에 RID가 있는지 체크
+    let statusOfDB_room = await checkDB_room_old(roomId); //
     let statusOfDB_device = await checkDB_device_old(roomId); //DB에 RID에 해당하는 Device에 Sensor 있는지 체크 & sensor 제외 Device가 1개 이상인지 체크 필요 
 
     if (statusOfDB_room && statusOfDB_device) {

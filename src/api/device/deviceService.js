@@ -65,11 +65,12 @@ const insertDeviceValue = async (DID, value) => {
     }
 };
 
-const updateDeviceStatus = async (DID, value) => {
+const updateDevice = async (DID, value) => {
     try {
-        const device = await Device.findOne({ DID });
+        const device = await Device.findOne({ deviceId: DID });
         if (device) {
             device.deviceStatus = value;
+            device.isdeviceOn = value === 0 ? false : true;
             await device.save();
         } else {
             console.log(`Device not found for deviceId: ${DID}`);
@@ -104,7 +105,7 @@ const turnOnDevice = async (deviceId) => {
         let currentValue = await findCurrentValue(deviceId); //Finc currenValue of the DID
         if (controlDeviceValue(deviceId, currentValue, 100)) { //Turn on
             await insertDeviceValue(deviceId, 100);
-            await updateDeviceStatus(deviceId, 100);
+            await updateDevice(deviceId, 100);
         } else {
             console.log(`network error with IoT`)
             const error = new Error('network error with IoT');
@@ -131,7 +132,7 @@ const turnOffDevice = async (deviceId) => {
         let currentValue = findCurrentValue(deviceId); //Find currenValue of the DID
         if (controlDeviceValue(deviceId, currentValue, 0)) { //Turn off
             await insertDeviceValue(deviceId, 0);
-            await updateDeviceStatus(deviceId, 0);
+            await updateDevice(deviceId, 0);
         } else {
             console.log(`network error with IoT`)
             const error = new Error('network error with IoT');
@@ -158,7 +159,7 @@ const setDeviceValue = async (deviceId, value) => {
         let currentValue = findCurrentValue(deviceId); //Find currenValue of the DID
         if (controlDeviceValue(deviceId, currentValue, value)) { //Set value
             await insertDeviceValue(deviceId, value);
-            await updateDeviceStatus(deviceId, value);
+            await updateDevice(deviceId, value);
         } else {
             console.log(`network error with IoT`)
             const error = new Error('network error with IoT');
@@ -180,7 +181,7 @@ const setWakeUpValue = async (deviceId, value) => {
     let statusOfDID = checkDID(deviceId);
     let statusOfDB_device = checkDB_device(deviceId);
     let statusOfDB_deviceValue = checkDB_deviceValue(deviceId);
-   
+
     if (statusOfDID && statusOfDB_device && statusOfDB_deviceValue) {
         try {
             const device = await Device.findOneAndUpdate( //Update device fo func wakeUp
@@ -264,15 +265,24 @@ const turnOffWakeUp = async (deviceId) => {
 };
 
 const getSunriseTime = async () => {
-    try {
-        const response = await axios.get(SUNRISE_URL);
-        // API 응답에서 일출 시간 추출
-        const sunriseTime = response.data.results.sunrise;
-        return sunriseTime; // 일출 시간을 Date 객체로 변환
-
-    } catch (error) {
-        console.error('일출 시간 조회 중 오류:', error);
-        return null;
+    while(1){
+        try {
+            const wakeUpDevices = await Device.find({ isWakeUpOn: true });
+            if(wakeUpDevices.length > 0){
+                try {
+                    const response = await axios.get(SUNRISE_URL);
+                    // API 응답에서 일출 시간 추출
+                    const sunriseTime = response.data.results.sunrise;
+                    return sunriseTime; // 일출 시간을 Date 객체로 변환
+                } catch (error) {
+                    console.error('일출 시간 조회 중 오류:', error);
+                    return null;
+                }
+            } 
+        } catch (error) {
+            console.error('Error retrieving wake-up devices:', error);
+            throw error;
+        } 
     }
 };
 

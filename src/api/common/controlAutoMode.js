@@ -4,15 +4,6 @@ const controlDeviceValue = require('./controlDeviceValue');
 const goalValue = 80;
 let autoModeActive = true;
 
-const findSensor = async (devices) => {
-    //return only sensor in devices
-    return devices.find(device => device.category === "Sensor");
-};
-
-const findDevices = async (devices) => {
-    return devices.find(device => device.category !== "Sensor");
-};
-
 const findCurrentDeviceValue = async (DID) => {
     try {
         // find newest Value by DID in mongoDB (sort descending)
@@ -47,8 +38,9 @@ const stopAutoMode = async () => {
 };
 
 const controlAutoMode = async (devices) => {
-    const SID = await findSensor(devices);
-    const deviceList = await findDevices(devices);
+    const SID = await devices.filter(device => device.deviceCategory === "Sensor");
+    const deviceList = await devices.filter(device => device.deviceCategory !== "Sensor");
+    console.log(`SID : ${SID}, deviceList : ${deviceList}`);
     const MQTT_TOPIC = `sensor/${SID}`;
 
     const messageHandler = async (topic, message) => {
