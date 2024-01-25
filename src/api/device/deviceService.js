@@ -1,3 +1,7 @@
+const LATITUDE = 12.9715987;
+const LONGITUDE = 77.5945627;
+const SUNRISE_URL = `https://api.sunrisesunset.io/json?lat=${LATITUDE}&lng=${LONGITUDE}`;
+const axios = require('axios');
 const Device = require('../../database/models/deviceModel');
 const DeviceValue = require('../../database/models/deviceValueModel');
 const checkDevice = require('../common/checkDevice');
@@ -264,16 +268,11 @@ const turnOffWakeUp = async (deviceId) => {
 
 const getSunriseTime = async () => {
     try {
-        const devices = Device.find({ isWakeUpOn: true });
-        if (devices) {
-            const response = await axios.get(SUNRISE_URL);
-            // API 응답에서 일출 시간 추출
-            const sunriseTime = response.data.results.sunrise;
-            return sunriseTime; // 일출 시간을 Date 객체로 변환
-        } else {
-            console.log("no devices that are isWakeUpOn true");
-            return null;
-        }
+        const response = await axios.get(SUNRISE_URL);
+        // API 응답에서 일출 시간 추출
+        const sunriseTime = response.data.results.sunrise;
+        return sunriseTime; // 일출 시간을 Date 객체로 변환
+
     } catch (error) {
         console.error('일출 시간 조회 중 오류:', error);
         return null;

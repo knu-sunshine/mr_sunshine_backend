@@ -127,7 +127,7 @@ const getDeviceList = async (roomId) => {
     let statusOfDB_room = await checkDB_room_old(roomId); //DB에 RID가 있는지 체크
     if (statusOfDB_room) {
         let device_list = await findDevice(roomId); //기기 찾아옴 리스트로 정리
-        return device_list;
+        console.log(device_list);
     } else {
         console.log(`new roomid error`)
         const error = new Error('it should be registered');
@@ -144,14 +144,14 @@ const addDevice = async (roomId, deviceId, deviceName) => {
     let roomName = await findRoomName(roomId);
     let category = await findDeviceCategory(deviceId);
 
-    if (statusOfDB_room && statusOfRID && statusOfDID & statusOfDB_device) {
+    if (statusOfDB_room && statusOfRID && statusOfDID && statusOfDB_device) {
         //디비에 아무 문제 없고, 적절한 RID이고, DID 연결되었으면
         const deviceRow = [
             {
                 deviceId: deviceId,
                 roomId: roomId,
                 deviceName: deviceName,
-                deviceStatus: false,
+                deviceStatus: 0,
                 deviceCategory: category,
                 isdeviceOn: false
             }
@@ -166,15 +166,7 @@ const addDevice = async (roomId, deviceId, deviceName) => {
         }
         //body에 돌려줄 내용 잘 정리해서 보내줌
         console.log("addDevice success");
-        return {
-            deviceId: deviceId,
-            currentStatus: 0,
-            ifDeviceOn: false,
-            wakeUpDegree: 0,
-            category: category,
-            roomId: roomId,
-            roomName: roomName
-        };
+        return await Device.findOne({ deviceId });
     } else {
         console.log(`IoT connection error: ${statusOfDID}, DB_room error : ${statusOfDB_room}, DB_device : ${statusOfDB_device}, RID error : ${statusOfRID}`);
         const error = new Error('adding device fail');

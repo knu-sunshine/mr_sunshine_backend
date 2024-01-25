@@ -1,13 +1,9 @@
-const LATITUDE= 12.9715987;
-const LONGITUDE= 77.5945627;
-const SUNRISE_URL= `https://api.sunrisesunset.io/json?lat=${LATITUDE}&lng=${LONGITUDE}`;
-const axios = require('axios');
-const momnet = require('moment');
+const Device = require('../../database/models/deviceModel');
+const moment = require('moment');
 const express = require('express');
 const router = express.Router();
 const deviceService = require('./deviceService');
 const errorHandler = require('../../middleware/errorHandler');
-const moment = require('moment');
 
 const turnOnDevice = async (req, res, next) => {
     // Enter the DID and turn on the device of the DID
@@ -53,7 +49,7 @@ const testWakeUpValue = async (req, res, next) => {
         console.log(`deviceId: ${deviceId}, value: ${value}`);
         const result = await deviceService.setDeviceValue(deviceId, value);
         res.status(201).json(result);
-    } catch (error){
+    } catch (error) {
         next(error);
     }
 };
@@ -65,7 +61,7 @@ const setWakeUpValue = async (req, res, next) => {
         console.log(`deviceId: ${deviceId}, value: ${value}`);
         const result = await deviceService.setWakeUpValue(deviceId, value);
         res.status(201).json(result);
-    } catch (error){
+    } catch (error) {
         next(error);
     }
 };
@@ -77,7 +73,7 @@ const turnOnWakeUp = async (req, res, next) => {
         console.log(`deviceId: ${deviceId}`);
         const result = await deviceService.turnOnWakeUp(deviceId);
         res.status(201).json(result);
-    } catch (error){
+    } catch (error) {
         next(error);
     }
 };
@@ -89,7 +85,7 @@ const turnOffWakeUp = async (req, res, next) => {
         console.log(`deviceId: ${deviceId}`);
         const result = await deviceService.turnOffWakeUp(deviceId);
         res.status(201).json(result);
-    } catch (error){
+    } catch (error) {
         next(error);
     }
 };
@@ -111,6 +107,7 @@ deviceService.getSunriseTime().then(sunriseTime => {
         scheduleWakeUp(sunriseTime);
     }
 });
+
 
 router.post('/on', turnOnDevice);
 router.post('/off', turnOffDevice);

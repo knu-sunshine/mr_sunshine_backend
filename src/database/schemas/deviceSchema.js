@@ -19,8 +19,10 @@ const deviceSchema = new mongoose.Schema({
     required: true,
   },
   deviceStatus:{
-    type: Boolean,
+    type: Number,
     required: true,
+    min:0,
+    max:100,
   },
   deviceCategory: {
     type: String,
