@@ -4,7 +4,6 @@ const roomService = require('./roomService');
 const errorHandler = require('../../middleware/errorHandler');
 
 const addDevice = async (req, res, next) => {
-    //request를 받아온다
     try {
         const { roomId, deviceId, deviceName } = req.body;
         console.log(`roomID: ${roomId}, deviceID: ${deviceId}, deviceName: ${deviceName}`);
@@ -39,10 +38,11 @@ const setRoomOff = async (req, res, next) => {
 
 const getDeviceList = async (req, res, next) => {
     try {
-        const { roomId } = req.body;
+        const { roomId } = req.query;
         console.log(`roomID: ${roomId}`);
         const result = await roomService.getDeviceList(roomId);
-        res.status(201).json(result);
+        res.status(200).json(result);
+        console.log("getDeviceList success");
     } catch (error) {
         next(error);
     }
