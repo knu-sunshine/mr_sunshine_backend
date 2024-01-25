@@ -7,9 +7,9 @@ const User = require('../../database/models/userModel');
  */
 const getUserByEmail = async(userEmail) => {
     try {
-      // User 모델을 사용하여 UserEmail과 일치하는 사용자를 찾음
+      // find User using Email
       const user = await User.findOne({ userEmail });
-      return user; // 찾은 사용자를 반환 (존재하지 않을 경우 null)
+      return user; // return User(no -> null)
 
     } catch (error) {
       console.error(`Error finding user: ${error.message}`);

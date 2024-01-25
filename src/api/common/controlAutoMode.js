@@ -5,7 +5,7 @@ const goalValue = 80;
 let autoModeActive = true;
 
 const findSensor = async (devices) => {
-    //devices에서 sensor인 기기만 return
+    //return only sensor in devices
     return devices.find(device => device.category === "Sensor");
 };
 
@@ -15,14 +15,14 @@ const findDevices = async (devices) => {
 
 const findCurrentDeviceValue = async (DID) => {
     try {
-        // MongoDB에서 해당 DID의 최신 value 찾기 (updateDate 내림차순으로 정렬)
+        // find newest Value by DID in mongoDB (sort descending)
         const currentValues = await DeviceValue.find({ deviceId: DID })
             .sort({ updateDate: -1 })
             .limit(1);
-        return current_value; // 찾은 장치 리스트 반환
+        return current_value; // return device list I found.
     } catch (error) {
-        console.error('장치 검색 중 오류 발생:', error);
-        return null; // 오류 발생 시 빈 리스트 반환
+        console.error('Can not find device :', error);
+        return null; 
     }
 };
 
@@ -52,12 +52,13 @@ const controlAutoMode = async (devices) => {
     const MQTT_TOPIC = `sensor/${SID}`;
 
     const messageHandler = async (topic, message) => {
-        if (!autoModeActive) return; // 자동 모드가 비활성화된 경우 바로 반환
+        if (!autoModeActive) return; // Return immediately if auto mode is disabled
 
         try {
             const parsedMessage = JSON.parse(message.toString());
             for (let device of deviceList) {
-                let deviceValue = await findCurrentDeviceValue(device.deviceId); // 비동기 처리
+                let deviceValue = await findCurrentDeviceValue(device.deviceId); //asynchronous processing
+ 
                 if (parsedMessage.sensor_value > goal)
                     await controlDeviceValue(device.deviceId, deviceValue, deviceValue - 1);
                 else if (parsedMessage.sensor_value < goal)
@@ -72,12 +73,12 @@ const controlAutoMode = async (devices) => {
     mqtt.client.on('message', messageHandler);
 
     while (autoModeActive) {
-        await new Promise(resolve => setTimeout(resolve, 1000)); // 1초마다 확인
+        await new Promise(resolve => setTimeout(resolve, 1000)); //check per 1 second
     }
 
     for (let device of deviceList) {
-        let deviceValue = await findCurrentDeviceValue(device.deviceId); // 현재 기기 값 가져오기
-        await insertDeviceValue(device.deviceId, deviceValue); // DB에 상태 저장
+        let deviceValue = await findCurrentDeviceValue(device.deviceId); // now value
+        await insertDeviceValue(device.deviceId, deviceValue); // save state to DB
     }
 
     mqtt.client.unsubscribe(MQTT_TOPIC);

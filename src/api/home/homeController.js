@@ -45,10 +45,13 @@ const getSunTime = async(req, res) => {
       const weatherData = response.data;
       const sunriseTimestamp = weatherData.sys.sunrise * 1000;
       const sunsetTimestamp = weatherData.sys.sunset * 1000;
+
       const sunriseDate = new Date(sunriseTimestamp);
       const sunsetDate = new Date(sunsetTimestamp);
+
       const now = new Date();
       const options = { timeZone: 'Asia/Kolkata' };
+
       sunrise = sunriseDate.toLocaleString('en-US', options);
       sunset = sunsetDate.toLocaleString('en-US', options);
 
@@ -79,6 +82,14 @@ const getSunTime = async(req, res) => {
     });
 };
 
+const getSunriseTime = async(req,res)=>{
+  return sunrise;
+}
+
+const getSunsetTime = async(req,res)=>{
+  return sunset;
+}
+
 
 
 
@@ -92,3 +103,7 @@ router.get('/home/sun', getSunTime);
 router.use(errorHandler);
 
 module.exports = router;
+module.exports = {
+  getSunriseTime,
+  getSunsetTime
+}
