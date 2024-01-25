@@ -96,19 +96,15 @@ const changeDeviceDB = async (DID, value) => {
 }
 
 const turnOnDevice = async (deviceId) => {
-    //DID를 입력 받고 해당 DID의 device를 on 시킨다.
-    //DID check - 적절한 format인지 || DID가 연결되었는지 확인
-    let statusOfDID = checkDID(deviceId) && await checkDevice(deviceId);
-    //DB check - Device DB에 있는지 확인
-    let statusOfDB_device = checkDB_device(deviceId);
-    //DB check - DeviceValue DB에 있는지 확인
-    let statusOfDB_deviceValue = checkDB_deviceValue(deviceId);
-    //조건 성립하면 Device를 킨다
+    let statusOfDID = checkDID(deviceId); //Check DID is valid
+    let statusOfDB_device = checkDB_device(deviceId); //Check DB_device has the DID
+    let statusOfDB_deviceValue = checkDB_deviceValue(deviceId); //Check DB_deviceValue has the DID
+
     if (statusOfDID && statusOfDB_device && statusOfDB_deviceValue) {
-        let currentValue = await findCurrentValue(deviceId);
-        if (controlDeviceValue(deviceId, currentValue, 100)) {
+        let currentValue = await findCurrentValue(deviceId); //Finc currenValue of the DID
+        if (controlDeviceValue(deviceId, currentValue, 100)) { //Turn on
             await insertDeviceValue(deviceId, 100);
-            await updateDeviceStatus(deviceId, 0);
+            await updateDeviceStatus(deviceId, 100);
         } else {
             console.log(`network error with IoT`)
             const error = new Error('network error with IoT');
@@ -127,17 +123,13 @@ const turnOnDevice = async (deviceId) => {
 };
 
 const turnOffDevice = async (deviceId) => {
-    //DID를 입력 받고 해당 DID의 device를 on 시킨다.
-    //DID check - 적절한 format인지 || DID가 연결되었는지 확인
-    let statusOfDID = checkDID(deviceId) && await checkDevice(deviceId);
-    //DB check - Device DB에 있는지 확인
-    let statusOfDB_device = checkDB_device(deviceId);
-    //DB check - DeviceValue DB에 있는지 확인
-    let statusOfDB_deviceValue = checkDB_deviceValue(deviceId);
-    //조건 성립하면 Device를 킨다
+    let statusOfDID = checkDID(deviceId); //Check DID is valid
+    let statusOfDB_device = checkDB_device(deviceId); //Check DB_device has the DID
+    let statusOfDB_deviceValue = checkDB_deviceValue(deviceId); //Check DB_deviceValue has the DID
+
     if (statusOfDID && statusOfDB_device && statusOfDB_deviceValue) {
-        let currentValue = findCurrentValue(deviceId);
-        if (controlDeviceValue(deviceId, currentValue, 0)) {
+        let currentValue = findCurrentValue(deviceId); //Find currenValue of the DID
+        if (controlDeviceValue(deviceId, currentValue, 0)) { //Turn off
             await insertDeviceValue(deviceId, 0);
             await updateDeviceStatus(deviceId, 0);
         } else {
@@ -158,17 +150,13 @@ const turnOffDevice = async (deviceId) => {
 };
 
 const setDeviceValue = async (deviceId, value) => {
-    //DID를 입력 받고 해당 DID의 device를 on 시킨다.
-    //DID check - 적절한 format인지 || DID가 연결되었는지 확인
-    let statusOfDID = checkDID(deviceId) && await checkDevice(deviceId);
-    //DB check - Device DB에 있는지 확인
-    let statusOfDB_device = checkDB_device(deviceId);
-    //DB check - DeviceValue DB에 있는지 확인
-    let statusOfDB_deviceValue = checkDB_deviceValue(deviceId);
-    //조건 성립하면 Device를 킨다
+    let statusOfDID = checkDID(deviceId); //Check DID is valid
+    let statusOfDB_device = checkDB_device(deviceId); //Check DB_device has the DID
+    let statusOfDB_deviceValue = checkDB_deviceValue(deviceId); //Check DB_deviceValue has the DID
+
     if (statusOfDID && statusOfDB_device && statusOfDB_deviceValue) {
-        let currentValue = findCurrentValue(deviceId);
-        if (controlDeviceValue(deviceId, currentValue, value)) {
+        let currentValue = findCurrentValue(deviceId); //Find currenValue of the DID
+        if (controlDeviceValue(deviceId, currentValue, value)) { //Set value
             await insertDeviceValue(deviceId, value);
             await updateDeviceStatus(deviceId, value);
         } else {
@@ -189,16 +177,13 @@ const setDeviceValue = async (deviceId, value) => {
 };
 
 const setWakeUpValue = async (deviceId, value) => {
-    //DID check - 적절한 format인지 || DID가 연결되었는지 확인
-    let statusOfDID = checkDID(deviceId) && await checkDevice(deviceId);
-    //DB check - Device DB에 있는지 확인
+    let statusOfDID = checkDID(deviceId);
     let statusOfDB_device = checkDB_device(deviceId);
-    //DB check - DeviceValue DB에 있는지 확인
     let statusOfDB_deviceValue = checkDB_deviceValue(deviceId);
-    //조건 성립하면 DID의 wakeUpValue를 설정 및 isWakeUpOn을 true로
+   
     if (statusOfDID && statusOfDB_device && statusOfDB_deviceValue) {
         try {
-            const device = await Device.findOneAndUpdate(
+            const device = await Device.findOneAndUpdate( //Update device fo func wakeUp
                 { deviceId: deviceId },
                 { $set: { wakeUpValue: value, isWakeUpOn: true } },
                 { new: true }
@@ -221,13 +206,10 @@ const setWakeUpValue = async (deviceId, value) => {
 };
 
 const turnOnWakeUp = async (deviceId) => {
-    //DID check - 적절한 format인지 || DID가 연결되었는지 확인
-    let statusOfDID = checkDID(deviceId) && await checkDevice(deviceId);
-    //DB check - Device DB에 있는지 확인
+    let statusOfDID = checkDID(deviceId);
     let statusOfDB_device = checkDB_device(deviceId);
-    //DB check - DeviceValue DB에 있는지 확인
     let statusOfDB_deviceValue = checkDB_deviceValue(deviceId);
-    //조건 성립하면 DID의 isWakeUpOn을 true로
+
     if (statusOfDID && statusOfDB_device && statusOfDB_deviceValue) {
         try {
             const device = await Device.findOneAndUpdate(
@@ -253,13 +235,10 @@ const turnOnWakeUp = async (deviceId) => {
 };
 
 const turnOffWakeUp = async (deviceId) => {
-    //DID check - 적절한 format인지 || DID가 연결되었는지 확인
-    let statusOfDID = checkDID(deviceId) && await checkDevice(deviceId);
-    //DB check - Device DB에 있는지 확인
+    let statusOfDID = checkDID(deviceId);
     let statusOfDB_device = checkDB_device(deviceId);
-    //DB check - DeviceValue DB에 있는지 확인
     let statusOfDB_deviceValue = checkDB_deviceValue(deviceId);
-    //조건 성립하면 DID의 isWakeUpOn을 true로
+
     if (statusOfDID && statusOfDB_device && statusOfDB_deviceValue) {
         try {
             const device = await Device.findOneAndUpdate(
