@@ -112,8 +112,7 @@ const findDeviceCategory = async (DID) => {
 const findDevice = async (RID) => {
     try {
         const devices = await Device.find({
-            roomId: RID,
-            deviceCategory: { $ne: 'Sensor' }
+            roomId: RID
         });
         return devices;
     } catch (error) {
