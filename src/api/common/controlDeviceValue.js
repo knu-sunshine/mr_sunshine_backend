@@ -13,7 +13,7 @@ const waitForIoT = (Device_ID, timeout) => {
     return new Promise((resolve, reject) => {
         const MQTT_TOPIC = `result/${Device_ID}`;
 
-        // 메시지 핸들러 함수 정의
+        // Define message handler function
         const messageHandler = (topic, message) => {
             if (topic === MQTT_TOPIC) {
                 try {
@@ -33,11 +33,11 @@ const waitForIoT = (Device_ID, timeout) => {
             }
         };
 
-        // 메시지 핸들러 설정
+        // setting message handler
         mqtt.client.subscribe(MQTT_TOPIC);
         mqtt.client.on('message', messageHandler);
 
-        // 타임아웃 핸들러
+        // Timeout handler
         const timer = setTimeout(() => {
             mqtt.client.unsubscribe(MQTT_TOPIC);
             mqtt.client.removeListener('message', messageHandler);
@@ -48,20 +48,20 @@ const waitForIoT = (Device_ID, timeout) => {
 
 const controlDeviceValue = (DID, current_value, goal_value) => {
    // console.log(`DID: ${DID}, current_value: ${current_value}, goal_value: ${goal_value}`);
-    let value = setValue(DID, current_value, goal_value); //value값 지정 led이냐 curtain에 따른 value 달라야함
+    let value = setValue(DID, current_value, goal_value);
     //console.log(`DID: ${DID}, value: ${value}`);
-    const MQTT_TOPIC = `control/${DID}`; //topic 이름
-    const message = { "device_value": value }; //보낼 메세지
-    mqtt.client.publish(MQTT_TOPIC, JSON.stringify(message)); //iot에게 보낸다
-    return waitForIoT(`${DID}`, 10000) // 5초 안에 메시지를 기다립니다.
+    const MQTT_TOPIC = `control/${DID}`; //topic name
+    const message = { "device_value": value }; //messagt to send
+    mqtt.client.publish(MQTT_TOPIC, JSON.stringify(message)); //send to IOT
+    return waitForIoT(`${DID}`, 10000) // wait 5 second for message
         .then(message => {
             console.log("Control of device is success");
             return true;
-        }) //상태 괜찮으면 해당 메시지 출력
+        }) //Good states
         .catch(error => {
             console.log("Control of device is fail", error);
             return false;
-        }); //상태 안괜찮으면 해당 메시지 출력
+        }); //bad states
 };
 
 module.exports = controlDeviceValue;

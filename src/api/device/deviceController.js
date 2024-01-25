@@ -10,7 +10,7 @@ const errorHandler = require('../../middleware/errorHandler');
 const moment = require('moment');
 
 const turnOnDevice = async (req, res, next) => {
-    //DID를 입력 받고 해당 DID의 device를 on 시킨다.
+    // Enter the DID and turn on the device of the DID
     try {
         const { deviceId } = req.body;
         console.log(`deviceId: ${deviceId}`);
@@ -22,7 +22,7 @@ const turnOnDevice = async (req, res, next) => {
 };
 
 const turnOffDevice = async (req, res, next) => {
-    //DID를 입력 받고 해당 DID의 device를 off 시킨다.
+    // Enter the DID and turn off the device of the DID
     try {
         const { deviceId } = req.body;
         console.log(`deviceId: ${deviceId}`);
@@ -34,7 +34,7 @@ const turnOffDevice = async (req, res, next) => {
 };
 
 const setDeviceValue = async (req, res, next) => {
-    //DID와 value를 입력 받고 해당 DID의 device의 value를 설정한다.
+    //Get the DID and value and set the value of the device of the corresponding DID.
     try {
         const { deviceId, value } = req.body;
         console.log(`deviceId: ${deviceId}, value: ${value}`);
@@ -47,7 +47,7 @@ const setDeviceValue = async (req, res, next) => {
 };
 
 const testWakeUpValue = async (req, res, next) => {
-    //DID와 value를 입력 받고 밝기 테스트를 해본다
+    //Enter DID and value and test.
     try {
         const { deviceId, value } = req.body;
         console.log(`deviceId: ${deviceId}, value: ${value}`);
@@ -59,7 +59,7 @@ const testWakeUpValue = async (req, res, next) => {
 };
 
 const setWakeUpValue = async (req, res, next) => {
-    //test 이후에 원하는 값을 confirm했을 때 디비에 저장
+    //Save the desired value in DB when confirmed after test
     try {
         const { deviceId, value } = req.body;
         console.log(`deviceId: ${deviceId}, value: ${value}`);
@@ -71,7 +71,7 @@ const setWakeUpValue = async (req, res, next) => {
 };
 
 const turnOnWakeUp = async (req, res, next) => {
-    //DID 제공받으면 해당 값을 가지는 디비 row의 isWakeUpOn을 true로
+    //DID When provided, the isWakeUpOn in the DBrow with the corresponding value is true
     try {
         const { deviceId } = req.body;
         console.log(`deviceId: ${deviceId}`);
@@ -83,7 +83,7 @@ const turnOnWakeUp = async (req, res, next) => {
 };
 
 const turnOffWakeUp = async (req, res, next) => {
-    //DID 제공받으면 해당 값을 가지는 디비 row의 isWakeUpOn을 false로
+    //DID When provided, the isWakeUpOn in the DBrow with the corresponding value is false
     try {
         const { deviceId } = req.body;
         console.log(`deviceId: ${deviceId}`);
