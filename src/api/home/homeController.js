@@ -80,7 +80,7 @@ const getSunsetTime = async(req,res)=>{
 // URL MAPPING
 router.post('/addroom', addRoom);
 router.get('/getroomlist', getRoomList);
-router.get('/home/sun', getSunTime);
+router.get('/suntime', getSunTime);
 
 // Error handling middleware
 router.use(errorHandler);
