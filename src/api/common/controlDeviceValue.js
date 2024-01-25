@@ -1,4 +1,5 @@
 const mqtt = require('../../../app');
+const checkDevice = require('./checkDevice');
 let isResolved = false;
 
 const setValue = (DID, current_value, goal_value) => {
@@ -47,9 +48,11 @@ const waitForIoT = (Device_ID, timeout) => {
 };
 
 const controlDeviceValue = (DID, current_value, goal_value) => {
-   // console.log(`DID: ${DID}, current_value: ${current_value}, goal_value: ${goal_value}`);
+    if(!checkDevice(DID)){
+        console.log('before control, connection lost');   
+        return false;
+    }
     let value = setValue(DID, current_value, goal_value);
-    //console.log(`DID: ${DID}, value: ${value}`);
     const MQTT_TOPIC = `control/${DID}`; //topic name
     const message = { "device_value": value }; //messagt to send
     mqtt.client.publish(MQTT_TOPIC, JSON.stringify(message)); //send to IOT

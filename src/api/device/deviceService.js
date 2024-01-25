@@ -65,6 +65,21 @@ const insertDeviceValue = async (DID, value) => {
     }
 };
 
+const updateDeviceStatus = async (DID, value) => {
+    try {
+        const device = await Device.findOne({ DID });
+        if (device) {
+            device.deviceStatus = value;
+            await device.save();
+        } else {
+            console.log(`Device not found for deviceId: ${DID}`);
+        }
+    } catch (error) {
+        console.error(`Error updating device status: ${error}`);
+        throw error;
+    }
+};
+
 const changeDeviceDB = async (DID, value) => {
     try {
         const device = await Device.findOneAndUpdate(
@@ -93,6 +108,7 @@ const turnOnDevice = async (deviceId) => {
         let currentValue = await findCurrentValue(deviceId);
         if (controlDeviceValue(deviceId, currentValue, 100)) {
             await insertDeviceValue(deviceId, 100);
+            await updateDeviceStatus(deviceId, 0);
         } else {
             console.log(`network error with IoT`)
             const error = new Error('network error with IoT');
@@ -123,6 +139,7 @@ const turnOffDevice = async (deviceId) => {
         let currentValue = findCurrentValue(deviceId);
         if (controlDeviceValue(deviceId, currentValue, 0)) {
             await insertDeviceValue(deviceId, 0);
+            await updateDeviceStatus(deviceId, 0);
         } else {
             console.log(`network error with IoT`)
             const error = new Error('network error with IoT');
@@ -153,6 +170,7 @@ const setDeviceValue = async (deviceId, value) => {
         let currentValue = findCurrentValue(deviceId);
         if (controlDeviceValue(deviceId, currentValue, value)) {
             await insertDeviceValue(deviceId, value);
+            await updateDeviceStatus(deviceId, value);
         } else {
             console.log(`network error with IoT`)
             const error = new Error('network error with IoT');

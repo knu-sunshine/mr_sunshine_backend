@@ -38,9 +38,9 @@ const checkDB_device_old = async (RID) => {
     try {
         const devices = await Device.find({ roomId: RID });
         const hasSensor = devices.some(device => Device.deviceCategory === 'Sensor');
-        if (hasSensor) {
+        if (hasSensor.length > 0) {
             const hasDevice = devices.some(device => Device.deviceCategory !== 'Sensor');
-            if (hasDevice)
+            if (hasDevice.length > 0)
                 return true;
         }
         return false;
@@ -130,6 +130,7 @@ const getDeviceList = async (roomId) => {
                 throw error;
             }
         }
+        console.log("getDeviceList success");
         return device_list;
     } else {
         console.log(`new roomid error`)
@@ -179,25 +180,29 @@ const setRoomOn = async (roomId) => {
     let statusOfDB_room = await checkDB_room_old(roomId); //Check RID is on room DB or not
     if (statusOfDB_room) {
         let device_list = await findDevice(roomId); //Find device_list except sensor
-        for (let device of device_list) {
-            if (!await checkDevice(device.deviceId)) { //Check DID is connected or not
-                console.log(`${device.deviceId} is not connected`);
-                continue;
+        if (device_list.length > 0) {
+            for (let device of device_list) {
+                let device_value = await findCurrentDeviceValue(device.deviceId); //Find currentvalue for DID
+                if (device_value === null) {
+                    console.log(`${device_value} is not defined on DB`);
+                    continue;
+                }
+                if (controlDeviceValue(device.deviceId, device_value, 100)) { //Control device to 100
+                    await insertDeviceValue(device.deviceId, 100); //Insert new row to DB
+                    await updateDeviceStatus(device.deviceId, 100); //Update row
+                    console.log("setRoomOn success");
+                } else {
+                    console.log(`network error with IoT`)
+                    const error = new Error('network error with IoT');
+                    error.status = 500;
+                    throw error;
+                }
             }
-            let device_value = await findCurrentDeviceValue(device.deviceId); //Find currentvalue for DID
-            if (device_value === null) {
-                console.log(`${device_value} is not defined on DB`);
-                continue;
-            }
-            if (controlDeviceValue(device.deviceId, device_value, 100)) { //Control device to 100
-                await insertDeviceValue(device.deviceId, 100); //Insert new row to DB
-                await updateDeviceStatus(device.deviceId, 100); //Update row
-            } else {
-                console.log(`network error with IoT`)
-                const error = new Error('network error with IoT');
-                error.status = 500;
-                throw error;
-            }
+        } else {
+            console.log(`no device register for the room`)
+            const error = new Error('devices should be registered');
+            error.status = 500;
+            throw error;
         }
         return {
             result: "success"
@@ -212,29 +217,31 @@ const setRoomOn = async (roomId) => {
 
 const setRoomOff = async (roomId) => {
     let statusOfDB_room = await checkDB_room_old(roomId); //Check RID is on room DB or not
-
     if (statusOfDB_room) {
         let device_list = await findDevice(roomId); //Find device_list except sensor
-        for (let device of device_list) {
-            if (!await checkDevice(device.deviceId)) { //Check DID is connected or not
-                console.log(`${device.deviceId} is not connected`);
-                continue;
+        if (device_list.length > 0) {
+            for (let device of device_list) {
+                let device_value = await findCurrentDeviceValue(device.deviceId); //Find currentvalue for DID
+                if (device_value === null) {
+                    console.log(`${device_value} is not defined on DB`);
+                    continue;
+                }
+                if (controlDeviceValue(device.deviceId, device_value, 0)) { //Control device to 100
+                    await insertDeviceValue(device.deviceId, 0); //Insert new row to DB
+                    await updateDeviceStatus(device.deviceId, 0); //Update row
+                    console.log("setRoomOff success");
+                } else {
+                    console.log(`network error with IoT`)
+                    const error = new Error('network error with IoT');
+                    error.status = 500;
+                    throw error;
+                }
             }
-            let device_value = await findCurrentDeviceValue(device.deviceId); //Find currentvalue for DID
-            if (device_value === null) {
-                console.log(`${device_value} is not defined on DB`);
-                continue;
-            }
-            if (controlDeviceValue(device.deviceId, device_value, 0)) {//Control Device to 0 
-                await insertDeviceValue(device.deviceId, 0); //Insert new row to DB
-                await updateDeviceStatus(device.deviceId, 0); //Update row
-
-            } else {
-                console.log(`network error with IoT`)
-                const error = new Error('network error with IoT');
-                error.status = 500;
-                throw error;
-            }
+        } else {
+            console.log(`no device register for the room`)
+            const error = new Error('devices should be registered');
+            error.status = 500;
+            throw error;
         }
         return {
             result: "success"
@@ -248,9 +255,8 @@ const setRoomOff = async (roomId) => {
 };
 
 const setAutoModeOn = async (roomId) => {
-    //DB check
-    let statusOfDB_room = await checkDB_room_new(roomId); //DB에 RID가 있는지 체크
-    let statusOfDB_device = await checkDB_device_old(roomId); //DBdp RID에 해당하는 Device에 Sensor 있는지 체크 & sensor 제외 Device가 1개 이상인지 체크 필요 
+    let statusOfDB_room = await checkDB_room_old(roomId); //DB에 RID가 있는지 체크
+    let statusOfDB_device = await checkDB_device_old(roomId); //DB에 RID에 해당하는 Device에 Sensor 있는지 체크 & sensor 제외 Device가 1개 이상인지 체크 필요 
 
     if (statusOfDB_room && statusOfDB_device) {
         let device_list = await findDevice(roomId); //기기 찾아옴 리스트로 정리

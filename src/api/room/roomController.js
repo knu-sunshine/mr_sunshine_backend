@@ -42,7 +42,6 @@ const getDeviceList = async (req, res, next) => {
         console.log(`roomID: ${roomId}`);
         const result = await roomService.getDeviceList(roomId);
         res.status(200).json(result);
-        console.log("getDeviceList success");
     } catch (error) {
         next(error);
     }
