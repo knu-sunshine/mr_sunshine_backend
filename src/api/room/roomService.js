@@ -274,13 +274,13 @@ const setRoomOff = async (roomId) => {
 };
 
 const setAutoModeOn = async (roomId) => {
-    let statusOfDB_room = await checkDB_room_old(roomId); //
-    let statusOfDB_device = await checkDB_device_old(roomId); //DB에 RID에 해당하는 Device에 Sensor 있는지 체크 & sensor 제외 Device가 1개 이상인지 체크 필요 
+    let statusOfDB_room = await checkDB_room_old(roomId); //Check RID is on room DB or not
+    let statusOfDB_device = await checkDB_device_old(roomId); //Check RID has one sensor | devices except sensor
 
     if (statusOfDB_room && statusOfDB_device) {
-        let device_list = await findDevice(roomId); //기기 찾아옴 리스트로 정리
+        let device_list = await findDevice(roomId); //Find device_list
         for (let device of device_list) {
-            let statusOfDevice = checkDevice(device.deviceId); //각 Device가 연결되었는지 check
+            let statusOfDevice = checkDevice(device.deviceId); //Check DID is connected or not
             if (!statusOfDevice) {
                 console.log('devices are not ready, checkDevice returns false');
                 const error = new Error('devices are not ready');
@@ -305,7 +305,7 @@ const setAutoModeOn = async (roomId) => {
 const setAutoModeOff = async (roomId) => {
     const devices = await autoMode.stopAutoMode();
     for (let device of devices) {
-        insert(device.id, device.value); //automode의 마지막 값을 받아와서 그 값을 디비에 저장
+        insertDeviceValue(device.id, device.value); //automode의 마지막 값을 받아와서 그 값을 디비에 저장
     }
 };
 

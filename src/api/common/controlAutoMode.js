@@ -96,7 +96,7 @@ const controlAutoMode = async (devices) => {
     }
 
     mqtt.client.unsubscribe(MQTT_TOPIC);
-    mqtt.client.off('message', messageHandler); // 이벤트 리스너 제거
+    mqtt.client.off('message', messageHandler); 
 };
 
 module.exports = {
