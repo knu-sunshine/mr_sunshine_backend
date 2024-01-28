@@ -270,10 +270,9 @@ const getSunriseTime = async () => {
             const wakeUpDevices = await Device.find({ isWakeUpOn: true });
             if(wakeUpDevices.length > 0){
                 try {
-                    const response = await axios.get(SUNRISE_URL);
-                    // API 응답에서 일출 시간 추출
+                    const response = await axios.get(SUNRISE_URL); //Get API data
                     const sunriseTime = response.data.results.sunrise;
-                    return sunriseTime; // 일출 시간을 Date 객체로 변환
+                    return sunriseTime; 
                 } catch (error) {
                     console.error('일출 시간 조회 중 오류:', error);
                     return null;
@@ -287,11 +286,10 @@ const getSunriseTime = async () => {
 };
 
 const wakeUp = () => {
-    //DB에서 isWakeUpOn이 true인 DID를 찾아서 wakeUpValue를 설정한다.
     try {
-        const devices = Device.find({ isWakeUpOn: true });
+        const devices = Device.find({ isWakeUpOn: true }); //Find Device where isWakeUpOn is true
 
-        devices.forEach(device => {
+        devices.forEach(device => { //control and insert value of device
             let currentValue = findCurrentValue(device.deviceId);
             if (controlDeviceValue(device.deviceId, currentValue, device.wakeUpValue)) {
                 insertDeviceValue(device.deviceId, device.wakeUpValue);
