@@ -1,13 +1,9 @@
-const LATITUDE= 12.9715987;
-const LONGITUDE= 77.5945627;
-const SUNRISE_URL= `https://api.sunrisesunset.io/json?lat=${LATITUDE}&lng=${LONGITUDE}`;
-const axios = require('axios');
-const momnet = require('moment');
+const Device = require('../../database/models/deviceModel');
+const moment = require('moment');
 const express = require('express');
 const router = express.Router();
 const deviceService = require('./deviceService');
 const errorHandler = require('../../middleware/errorHandler');
-const moment = require('moment');
 
 const turnOnDevice = async (req, res, next) => {
     // Enter the DID and turn on the device of the DID
@@ -49,11 +45,11 @@ const setDeviceValue = async (req, res, next) => {
 const testWakeUpValue = async (req, res, next) => {
     //Enter DID and value and test.
     try {
-        const { deviceId, value } = req.body;
+        const { deviceId, value } = req.query;
         console.log(`deviceId: ${deviceId}, value: ${value}`);
-        const result = await deviceService.setDeviceValue(deviceId, value);
-        res.status(201).json(result);
-    } catch (error){
+        const result = await deviceService.testWakeUpValue(deviceId, parseInt(value));
+        res.status(200).json(result);
+    } catch (error) {
         next(error);
     }
 };
@@ -65,7 +61,7 @@ const setWakeUpValue = async (req, res, next) => {
         console.log(`deviceId: ${deviceId}, value: ${value}`);
         const result = await deviceService.setWakeUpValue(deviceId, value);
         res.status(201).json(result);
-    } catch (error){
+    } catch (error) {
         next(error);
     }
 };
@@ -77,7 +73,7 @@ const turnOnWakeUp = async (req, res, next) => {
         console.log(`deviceId: ${deviceId}`);
         const result = await deviceService.turnOnWakeUp(deviceId);
         res.status(201).json(result);
-    } catch (error){
+    } catch (error) {
         next(error);
     }
 };
@@ -89,7 +85,7 @@ const turnOffWakeUp = async (req, res, next) => {
         console.log(`deviceId: ${deviceId}`);
         const result = await deviceService.turnOffWakeUp(deviceId);
         res.status(201).json(result);
-    } catch (error){
+    } catch (error) {
         next(error);
     }
 };
@@ -99,7 +95,7 @@ const scheduleWakeUp = (sunriseTime) => {
     const sunrise = moment(sunriseTime, 'h:mm:ss A').toDate();
     const delay = sunrise.getTime() - now.getTime();
     console.log(`일출까지 ${delay}밀리초 남았습니다.`);
-    if (delay > 0) {
+    if (delay === 0) {
         setTimeout(deviceService.wakeUp, delay);
     } else {
         console.log('오늘의 일출 시간은 이미 지났습니다.');
@@ -111,6 +107,7 @@ deviceService.getSunriseTime().then(sunriseTime => {
         scheduleWakeUp(sunriseTime);
     }
 });
+
 
 router.post('/on', turnOnDevice);
 router.post('/off', turnOffDevice);

@@ -90,10 +90,6 @@ const getSunsetTime = async(req,res)=>{
   return sunset;
 }
 
-
-
-
-
 // URL MAPPING
 router.post('/addroom', addRoom);
 router.get('/getroomlist', getRoomList);
@@ -103,7 +99,3 @@ router.get('/home/sun', getSunTime);
 router.use(errorHandler);
 
 module.exports = router;
-module.exports = {
-  getSunriseTime,
-  getSunsetTime
-}

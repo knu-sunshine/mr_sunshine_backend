@@ -1,3 +1,7 @@
+const LATITUDE = 12.9715987;
+const LONGITUDE = 77.5945627;
+const SUNRISE_URL = `https://api.sunrisesunset.io/json?lat=${LATITUDE}&lng=${LONGITUDE}`;
+const axios = require('axios');
 const Device = require('../../database/models/deviceModel');
 const DeviceValue = require('../../database/models/deviceValueModel');
 const checkDevice = require('../common/checkDevice');
@@ -61,6 +65,22 @@ const insertDeviceValue = async (DID, value) => {
     }
 };
 
+const updateDevice = async (DID, value) => {
+    try {
+        const device = await Device.findOne({ deviceId: DID });
+        if (device) {
+            device.deviceStatus = value;
+            device.isdeviceOn = value === 0 ? false : true;
+            await device.save();
+        } else {
+            console.log(`Device not found for deviceId: ${DID}`);
+        }
+    } catch (error) {
+        console.error(`Error updating device status: ${error}`);
+        throw error;
+    }
+};
+
 const changeDeviceDB = async (DID, value) => {
     try {
         const device = await Device.findOneAndUpdate(
@@ -77,18 +97,15 @@ const changeDeviceDB = async (DID, value) => {
 }
 
 const turnOnDevice = async (deviceId) => {
-    //DID를 입력 받고 해당 DID의 device를 on 시킨다.
-    //DID check - 적절한 format인지 || DID가 연결되었는지 확인
-    let statusOfDID = checkDID(deviceId) && await checkDevice(deviceId);
-    //DB check - Device DB에 있는지 확인
-    let statusOfDB_device = checkDB_device(deviceId);
-    //DB check - DeviceValue DB에 있는지 확인
-    let statusOfDB_deviceValue = checkDB_deviceValue(deviceId);
-    //조건 성립하면 Device를 킨다
+    let statusOfDID = checkDID(deviceId); //Check DID is valid
+    let statusOfDB_device = checkDB_device(deviceId); //Check DB_device has the DID
+    let statusOfDB_deviceValue = checkDB_deviceValue(deviceId); //Check DB_deviceValue has the DID
+
     if (statusOfDID && statusOfDB_device && statusOfDB_deviceValue) {
-        let currentValue = await findCurrentValue(deviceId);
-        if (controlDeviceValue(deviceId, currentValue, 100)) {
+        let currentValue = await findCurrentValue(deviceId); //Finc currenValue of the DID
+        if (controlDeviceValue(deviceId, currentValue, 100)) { //Turn on
             await insertDeviceValue(deviceId, 100);
+            await updateDevice(deviceId, 100);
         } else {
             console.log(`network error with IoT`)
             const error = new Error('network error with IoT');
@@ -107,18 +124,15 @@ const turnOnDevice = async (deviceId) => {
 };
 
 const turnOffDevice = async (deviceId) => {
-    //DID를 입력 받고 해당 DID의 device를 on 시킨다.
-    //DID check - 적절한 format인지 || DID가 연결되었는지 확인
-    let statusOfDID = checkDID(deviceId) && await checkDevice(deviceId);
-    //DB check - Device DB에 있는지 확인
-    let statusOfDB_device = checkDB_device(deviceId);
-    //DB check - DeviceValue DB에 있는지 확인
-    let statusOfDB_deviceValue = checkDB_deviceValue(deviceId);
-    //조건 성립하면 Device를 킨다
+    let statusOfDID = checkDID(deviceId); //Check DID is valid
+    let statusOfDB_device = checkDB_device(deviceId); //Check DB_device has the DID
+    let statusOfDB_deviceValue = checkDB_deviceValue(deviceId); //Check DB_deviceValue has the DID
+
     if (statusOfDID && statusOfDB_device && statusOfDB_deviceValue) {
-        let currentValue = findCurrentValue(deviceId);
-        if (controlDeviceValue(deviceId, currentValue, 0)) {
+        let currentValue = findCurrentValue(deviceId); //Find currenValue of the DID
+        if (controlDeviceValue(deviceId, currentValue, 0)) { //Turn off
             await insertDeviceValue(deviceId, 0);
+            await updateDevice(deviceId, 0);
         } else {
             console.log(`network error with IoT`)
             const error = new Error('network error with IoT');
@@ -137,18 +151,15 @@ const turnOffDevice = async (deviceId) => {
 };
 
 const setDeviceValue = async (deviceId, value) => {
-    //DID를 입력 받고 해당 DID의 device를 on 시킨다.
-    //DID check - 적절한 format인지 || DID가 연결되었는지 확인
-    let statusOfDID = checkDID(deviceId) && await checkDevice(deviceId);
-    //DB check - Device DB에 있는지 확인
-    let statusOfDB_device = checkDB_device(deviceId);
-    //DB check - DeviceValue DB에 있는지 확인
-    let statusOfDB_deviceValue = checkDB_deviceValue(deviceId);
-    //조건 성립하면 Device를 킨다
+    let statusOfDID = checkDID(deviceId); //Check DID is valid
+    let statusOfDB_device = checkDB_device(deviceId); //Check DB_device has the DID
+    let statusOfDB_deviceValue = checkDB_deviceValue(deviceId); //Check DB_deviceValue has the DID
+
     if (statusOfDID && statusOfDB_device && statusOfDB_deviceValue) {
-        let currentValue = findCurrentValue(deviceId);
-        if (controlDeviceValue(deviceId, currentValue, value)) {
+        let currentValue = await findCurrentValue(deviceId); //Find currenValue of the DID
+        if (await controlDeviceValue(deviceId, currentValue, value)) { //Set value
             await insertDeviceValue(deviceId, value);
+            await updateDevice(deviceId, value);
         } else {
             console.log(`network error with IoT`)
             const error = new Error('network error with IoT');
@@ -166,17 +177,42 @@ const setDeviceValue = async (deviceId, value) => {
     };
 };
 
+const testWakeUpValue = async (deviceId, value) => {
+    let statusOfDID = checkDID(deviceId); //Check DID is valid
+    let statusOfDB_device = checkDB_device(deviceId); //Check DB_device has the DID
+    let statusOfDB_deviceValue = checkDB_deviceValue(deviceId); //Check DB_deviceValue has the DID
+
+    if (statusOfDID && statusOfDB_device && statusOfDB_deviceValue) {
+        let currentValue = findCurrentValue(deviceId); //Find currenValue of the DID
+        if (await controlDeviceValue(deviceId, currentValue, value)) { 
+            console.log('testWakeUpValue success');
+        } else {
+            console.log(`network error with IoT`)
+            const error = new Error('network error with IoT');
+            error.status = 404;
+            throw error;
+        }
+    } else {
+        console.log(`DID is not valid : ${statusOfDID}, DB_device : ${statusOfDB_device}, DB_deviceValue : ${statusOfDB_deviceValue}`);
+        const error = new Error('DID | DB has error');
+        error.status = 404;
+        throw error
+    }
+    return {
+        result: "success"
+    };
+};
+
+
+
 const setWakeUpValue = async (deviceId, value) => {
-    //DID check - 적절한 format인지 || DID가 연결되었는지 확인
-    let statusOfDID = checkDID(deviceId) && await checkDevice(deviceId);
-    //DB check - Device DB에 있는지 확인
+    let statusOfDID = checkDID(deviceId);
     let statusOfDB_device = checkDB_device(deviceId);
-    //DB check - DeviceValue DB에 있는지 확인
     let statusOfDB_deviceValue = checkDB_deviceValue(deviceId);
-    //조건 성립하면 DID의 wakeUpValue를 설정 및 isWakeUpOn을 true로
+
     if (statusOfDID && statusOfDB_device && statusOfDB_deviceValue) {
         try {
-            const device = await Device.findOneAndUpdate(
+            const device = await Device.findOneAndUpdate( //Update device fo func wakeUp
                 { deviceId: deviceId },
                 { $set: { wakeUpValue: value, isWakeUpOn: true } },
                 { new: true }
@@ -199,13 +235,10 @@ const setWakeUpValue = async (deviceId, value) => {
 };
 
 const turnOnWakeUp = async (deviceId) => {
-    //DID check - 적절한 format인지 || DID가 연결되었는지 확인
-    let statusOfDID = checkDID(deviceId) && await checkDevice(deviceId);
-    //DB check - Device DB에 있는지 확인
+    let statusOfDID = checkDID(deviceId);
     let statusOfDB_device = checkDB_device(deviceId);
-    //DB check - DeviceValue DB에 있는지 확인
     let statusOfDB_deviceValue = checkDB_deviceValue(deviceId);
-    //조건 성립하면 DID의 isWakeUpOn을 true로
+
     if (statusOfDID && statusOfDB_device && statusOfDB_deviceValue) {
         try {
             const device = await Device.findOneAndUpdate(
@@ -231,13 +264,10 @@ const turnOnWakeUp = async (deviceId) => {
 };
 
 const turnOffWakeUp = async (deviceId) => {
-    //DID check - 적절한 format인지 || DID가 연결되었는지 확인
-    let statusOfDID = checkDID(deviceId) && await checkDevice(deviceId);
-    //DB check - Device DB에 있는지 확인
+    let statusOfDID = checkDID(deviceId);
     let statusOfDB_device = checkDB_device(deviceId);
-    //DB check - DeviceValue DB에 있는지 확인
     let statusOfDB_deviceValue = checkDB_deviceValue(deviceId);
-    //조건 성립하면 DID의 isWakeUpOn을 true로
+
     if (statusOfDID && statusOfDB_device && statusOfDB_deviceValue) {
         try {
             const device = await Device.findOneAndUpdate(
@@ -263,29 +293,31 @@ const turnOffWakeUp = async (deviceId) => {
 };
 
 const getSunriseTime = async () => {
-    try {
-        const devices = Device.find({ isWakeUpOn: true });
-        if (devices) {
-            const response = await axios.get(SUNRISE_URL);
-            // API 응답에서 일출 시간 추출
-            const sunriseTime = response.data.results.sunrise;
-            return sunriseTime; // 일출 시간을 Date 객체로 변환
-        } else {
-            console.log("no devices that are isWakeUpOn true");
-            return null;
-        }
-    } catch (error) {
-        console.error('일출 시간 조회 중 오류:', error);
-        return null;
+    while(1){
+        try {
+            const wakeUpDevices = await Device.find({ isWakeUpOn: true });
+            if(wakeUpDevices.length > 0){
+                try {
+                    const response = await axios.get(SUNRISE_URL); //Get API data
+                    const sunriseTime = response.data.results.sunrise;
+                    return sunriseTime; 
+                } catch (error) {
+                    console.error('일출 시간 조회 중 오류:', error);
+                    throw error;
+                }
+            } 
+        } catch (error) {
+            console.error('Error retrieving wake-up devices:', error);
+            throw error;
+        } 
     }
 };
 
-const wakeUp = () => {
-    //DB에서 isWakeUpOn이 true인 DID를 찾아서 wakeUpValue를 설정한다.
+const wakeUp = async () => {
     try {
-        const devices = Device.find({ isWakeUpOn: true });
-
-        devices.forEach(device => {
+        const devices = await Device.find({ isWakeUpOn: true }); //Find Device where isWakeUpOn is true
+        //console.log(devices);
+        for(let device of devices){
             let currentValue = findCurrentValue(device.deviceId);
             if (controlDeviceValue(device.deviceId, currentValue, device.wakeUpValue)) {
                 insertDeviceValue(device.deviceId, device.wakeUpValue);
@@ -295,8 +327,7 @@ const wakeUp = () => {
                 error.status = 404;
                 throw error;
             }
-        });
-
+        }
     } catch (error) {
         console.error('wakeUp, checkDB_device, DB 조회 중 오류 발생:', error);
     }
@@ -310,5 +341,6 @@ module.exports = {
     turnOnWakeUp,
     turnOffWakeUp,
     getSunriseTime,
-    wakeUp
+    wakeUp,
+    testWakeUpValue
 };

@@ -1,28 +1,42 @@
 const DeviceValue = require('../../database/models/deviceValueModel');
 const mqtt = require('../../../app');
 const controlDeviceValue = require('./controlDeviceValue');
-const goalValue = 80;
+const goalValue = 20;
 let autoModeActive = true;
 
-const findSensor = async (devices) => {
-    //return only sensor in devices
-    return devices.find(device => device.category === "Sensor");
+const findSensorDID = async (devices) => {
+    try {
+        const sensorDevices = devices.filter(device => device.deviceCategory === "Sensor");
+        const sensorDIDs = sensorDevices.map(device => device.deviceId);
+        return sensorDIDs;
+    } catch (error) {
+        console.error('Error finding sensor DIDs:', error);
+        return [];
+    }
 };
 
-const findDevices = async (devices) => {
-    return devices.find(device => device.category !== "Sensor");
+const findDevicesDID = async (devices) => {
+    try {
+        const deviceList = devices.filter(device => device.deviceCategory !== "Sensor");
+        const devicesDIDs = deviceList.map(device => device.deviceId);
+        return devicesDIDs;
+    } catch (error) {
+        console.error('Error finding sensor DIDs:', error);
+        return [];
+    }
 };
 
 const findCurrentDeviceValue = async (DID) => {
     try {
-        // find newest Value by DID in mongoDB (sort descending)
-        const currentValues = await DeviceValue.find({ deviceId: DID })
+        // MongoDB에서 해당 DID의 최신 value 찾기 (updateDate 내림차순으로 정렬)
+        const currentValue = await DeviceValue.findOne({ deviceId: DID })
             .sort({ updateDate: -1 })
-            .limit(1);
-        return current_value; // return device list I found.
+            .select('value');
+        //console.log(currentValue.value);
+        return currentValue.value;
     } catch (error) {
-        console.error('Can not find device :', error);
-        return null; 
+        console.error('장치 검색 중 오류 발생:', error);
+        return null; // 오류 발생 시 빈 리스트 반환
     }
 };
 
@@ -47,8 +61,9 @@ const stopAutoMode = async () => {
 };
 
 const controlAutoMode = async (devices) => {
-    const SID = await findSensor(devices);
-    const deviceList = await findDevices(devices);
+    const SID = await findSensorDID(devices);
+    const deviceList = await findDevicesDID(devices);
+    console.log(`SID : ${SID}, deviceList : ${deviceList}`);
     const MQTT_TOPIC = `sensor/${SID}`;
 
     const messageHandler = async (topic, message) => {
@@ -56,13 +71,25 @@ const controlAutoMode = async (devices) => {
 
         try {
             const parsedMessage = JSON.parse(message.toString());
-            for (let device of deviceList) {
-                let deviceValue = await findCurrentDeviceValue(device.deviceId); //asynchronous processing
- 
-                if (parsedMessage.sensor_value > goal)
-                    await controlDeviceValue(device.deviceId, deviceValue, deviceValue - 1);
-                else if (parsedMessage.sensor_value < goal)
-                    await controlDeviceValue(device.deviceId, deviceValue, deviceValue + 1);
+            const sensorValue = parsedMessage.sensor_value;
+            for (let deviceId of deviceList) {
+                //console.log("deviceId : ", deviceId);
+                let deviceValue = await findCurrentDeviceValue(deviceId); //asynchronous processing
+                let sendingValue = deviceValue;
+                if (sensorValue > goalValue){
+                    if(sendingValue - 5 >= 0)
+                        sendingValue -= 5;
+                    console.log("did : ", deviceId,  "sensor_value : ", sensorValue, " , current_value : ", deviceValue, " , sending_value : ", sendingValue);
+                    await controlDeviceValue(deviceId, deviceValue, sendingValue);
+                    await insertDeviceValue(deviceId, sendingValue); // save state to DB
+                }
+                else if (sensorValue < goalValue){
+                    if(sendingValue + 5 <= 100)
+                        sendingValue += 5;
+                    console.log("did : ", deviceId, "sensor_value : ", sensorValue, " , current_value : ", deviceValue, " , sending_value : ", sendingValue);
+                    await controlDeviceValue(deviceId, deviceValue, sendingValue);
+                    await insertDeviceValue(deviceId, sendingValue); // save state to DB
+                }
             }
         } catch (error) {
             console.error("Error in message handling:", error);
@@ -73,16 +100,11 @@ const controlAutoMode = async (devices) => {
     mqtt.client.on('message', messageHandler);
 
     while (autoModeActive) {
-        await new Promise(resolve => setTimeout(resolve, 1000)); //check per 1 second
-    }
-
-    for (let device of deviceList) {
-        let deviceValue = await findCurrentDeviceValue(device.deviceId); // now value
-        await insertDeviceValue(device.deviceId, deviceValue); // save state to DB
+        await new Promise(resolve => setTimeout(resolve, 20000)); //check per 1 second
     }
 
     mqtt.client.unsubscribe(MQTT_TOPIC);
-    mqtt.client.off('message', messageHandler); // 이벤트 리스너 제거
+    mqtt.client.off('message', messageHandler); 
 };
 
 module.exports = {
