@@ -90,6 +90,7 @@ const turnOffWakeUp = async (req, res, next) => {
     }
 };
 
+
 const scheduleWakeUp = (sunriseTime) => {
     const now = new Date();
     const sunrise = moment(sunriseTime, 'h:mm:ss A').toDate();

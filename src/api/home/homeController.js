@@ -55,25 +55,8 @@ const getSunTime = async(req, res) => {
       sunrise = sunriseDate.toLocaleString('en-US', options);
       sunset = sunsetDate.toLocaleString('en-US', options);
 
-      if (now > sunsetDate || now < sunriseDate) {
-        isSunRise = true;
-      } else {
-        isSunRise = false;
-      }
 
-      //when sun rise
-      if (isSunRise) {
-        res.json({
-          "isSunRise": isSunRise,
-          "time": sunrise
-        });
-      } else {
-      //when sun set
-        res.json({
-          "isSunRise": isSunRise,
-          "time": sunset
-        });
-      }
+      res.status(200).json({sunrise,sunset})
     })
     .catch(error => {
       console.error('시간 정보를 가져오는 도중 에러 발생:', error.message);
@@ -93,7 +76,7 @@ const getSunsetTime = async(req,res)=>{
 // URL MAPPING
 router.post('/addroom', addRoom);
 router.get('/getroomlist', getRoomList);
-router.get('/home/sun', getSunTime);
+router.get('/sun', getSunTime);
 
 // Error handling middleware
 router.use(errorHandler);
