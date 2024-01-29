@@ -204,7 +204,7 @@ const setRoomOn = async (roomId) => {
                     console.log(`${device_value} is not defined on DB`);
                     continue;
                 }
-                if (controlDeviceValue(device.deviceId, device_value, 100)) { //Control device to 100
+                if (await controlDeviceValue(device.deviceId, device_value, 100)) { //Control device to 100
                     await insertDeviceValue(device.deviceId, 100); //Insert new row to DB
                     await updateDevice(device.deviceId, 100); //Update Device
                     await updateRoom(roomId, 100); //Update Room
@@ -244,7 +244,7 @@ const setRoomOff = async (roomId) => {
                     console.log(`${device_value} is not defined on DB`);
                     continue;
                 }
-                if (controlDeviceValue(device.deviceId, device_value, 0)) { //Control device to 100
+                if (await controlDeviceValue(device.deviceId, device_value, 0)) { //Control device to 100
                     await insertDeviceValue(device.deviceId, 0); //Insert new row to DB
                     await updateDevice(device.deviceId, 100); //Update Device
                     await updateRoom(roomId, 100); //Update Room
