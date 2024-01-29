@@ -156,8 +156,8 @@ const setDeviceValue = async (deviceId, value) => {
     let statusOfDB_deviceValue = checkDB_deviceValue(deviceId); //Check DB_deviceValue has the DID
 
     if (statusOfDID && statusOfDB_device && statusOfDB_deviceValue) {
-        let currentValue = findCurrentValue(deviceId); //Find currenValue of the DID
-        if (controlDeviceValue(deviceId, currentValue, value)) { //Set value
+        let currentValue = await findCurrentValue(deviceId); //Find currenValue of the DID
+        if (await controlDeviceValue(deviceId, currentValue, value)) { //Set value
             await insertDeviceValue(deviceId, value);
             await updateDevice(deviceId, value);
         } else {
@@ -176,6 +176,34 @@ const setDeviceValue = async (deviceId, value) => {
         result: "success"
     };
 };
+
+const testWakeUpValue = async (deviceId, value) => {
+    let statusOfDID = checkDID(deviceId); //Check DID is valid
+    let statusOfDB_device = checkDB_device(deviceId); //Check DB_device has the DID
+    let statusOfDB_deviceValue = checkDB_deviceValue(deviceId); //Check DB_deviceValue has the DID
+
+    if (statusOfDID && statusOfDB_device && statusOfDB_deviceValue) {
+        let currentValue = findCurrentValue(deviceId); //Find currenValue of the DID
+        if (await controlDeviceValue(deviceId, currentValue, value)) { 
+            console.log('testWakeUpValue success');
+        } else {
+            console.log(`network error with IoT`)
+            const error = new Error('network error with IoT');
+            error.status = 404;
+            throw error;
+        }
+    } else {
+        console.log(`DID is not valid : ${statusOfDID}, DB_device : ${statusOfDB_device}, DB_deviceValue : ${statusOfDB_deviceValue}`);
+        const error = new Error('DID | DB has error');
+        error.status = 404;
+        throw error
+    }
+    return {
+        result: "success"
+    };
+};
+
+
 
 const setWakeUpValue = async (deviceId, value) => {
     let statusOfDID = checkDID(deviceId);
@@ -275,7 +303,7 @@ const getSunriseTime = async () => {
                     return sunriseTime; 
                 } catch (error) {
                     console.error('일출 시간 조회 중 오류:', error);
-                    return null;
+                    throw error;
                 }
             } 
         } catch (error) {
@@ -285,11 +313,11 @@ const getSunriseTime = async () => {
     }
 };
 
-const wakeUp = () => {
+const wakeUp = async () => {
     try {
-        const devices = Device.find({ isWakeUpOn: true }); //Find Device where isWakeUpOn is true
-
-        devices.forEach(device => { //control and insert value of device
+        const devices = await Device.find({ isWakeUpOn: true }); //Find Device where isWakeUpOn is true
+        //console.log(devices);
+        for(let device of devices){
             let currentValue = findCurrentValue(device.deviceId);
             if (controlDeviceValue(device.deviceId, currentValue, device.wakeUpValue)) {
                 insertDeviceValue(device.deviceId, device.wakeUpValue);
@@ -299,8 +327,7 @@ const wakeUp = () => {
                 error.status = 404;
                 throw error;
             }
-        });
-
+        }
     } catch (error) {
         console.error('wakeUp, checkDB_device, DB 조회 중 오류 발생:', error);
     }
@@ -314,5 +341,6 @@ module.exports = {
     turnOnWakeUp,
     turnOffWakeUp,
     getSunriseTime,
-    wakeUp
+    wakeUp,
+    testWakeUpValue
 };

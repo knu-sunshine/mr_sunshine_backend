@@ -303,10 +303,7 @@ const setAutoModeOn = async (roomId) => {
 };
 
 const setAutoModeOff = async (roomId) => {
-    const devices = await autoMode.stopAutoMode();
-    for (let device of devices) {
-        insertDeviceValue(device.id, device.value); //automode의 마지막 값을 받아와서 그 값을 디비에 저장
-    }
+    await autoMode.stopAutoMode();
 };
 
 module.exports = {

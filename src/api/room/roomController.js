@@ -51,8 +51,8 @@ const setAutoModeOn = async (req,res,next) => {
     try{
         const { roomId } = req.body;
         console.log(`roomID: ${roomId}`);
-        const result = await roomService.setAutoModeOn(roomId);
         res.status(201).json();
+        const result = await roomService.setAutoModeOn(roomId);
     } catch(error){
         next(error);
     }

@@ -45,10 +45,10 @@ const setDeviceValue = async (req, res, next) => {
 const testWakeUpValue = async (req, res, next) => {
     //Enter DID and value and test.
     try {
-        const { deviceId, value } = req.body;
+        const { deviceId, value } = req.query;
         console.log(`deviceId: ${deviceId}, value: ${value}`);
-        const result = await deviceService.setDeviceValue(deviceId, value);
-        res.status(201).json(result);
+        const result = await deviceService.testWakeUpValue(deviceId, parseInt(value));
+        res.status(200).json(result);
     } catch (error) {
         next(error);
     }
@@ -95,7 +95,7 @@ const scheduleWakeUp = (sunriseTime) => {
     const sunrise = moment(sunriseTime, 'h:mm:ss A').toDate();
     const delay = sunrise.getTime() - now.getTime();
     console.log(`일출까지 ${delay}밀리초 남았습니다.`);
-    if (delay > 0) {
+    if (delay === 0) {
         setTimeout(deviceService.wakeUp, delay);
     } else {
         console.log('오늘의 일출 시간은 이미 지났습니다.');
