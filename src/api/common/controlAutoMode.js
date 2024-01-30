@@ -1,7 +1,7 @@
 const DeviceValue = require('../../database/models/deviceValueModel');
 const mqtt = require('../../../app');
 const controlDeviceValue = require('./controlDeviceValue');
-const goalValue = 20;
+const goalValue = 25;
 let autoModeActive = true;
 
 const findSensorDID = async (devices) => {
@@ -65,6 +65,7 @@ const controlAutoMode = async (devices) => {
     const deviceList = await findDevicesDID(devices);
     console.log(`SID : ${SID}, deviceList : ${deviceList}`);
     const MQTT_TOPIC = `sensor/${SID}`;
+    automModeActive = true;
     console.log('auto mode has been started.');
 
     const messageHandler = async (topic, message) => {
