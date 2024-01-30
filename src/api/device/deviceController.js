@@ -95,17 +95,17 @@ const scheduleWakeUp = (sunriseTime) => {
     const now = new Date();
     const sunrise = moment(sunriseTime, 'h:mm:ss A').toDate();
     const delay = sunrise.getTime() - now.getTime();
-    console.log(`일출까지 ${delay}밀리초 남았습니다.`);
-    if (delay >= 0 && delay <= 5) {
-        setTimeout(deviceService.wakeUp, delay);
+    console.log(`sunrise : ${sunrise.getTime()}, now : ${now.getTime()}, delay: ${delay}`);
+    if (delay < 30000 && delay > 0) {
+        deviceService.wakeUp();
     } else {
-        console.log('오늘의 일출 시간은 이미 지났습니다.');
+        console.log('No need to wake up');
     }
 }
 
 deviceService.getSunriseTime().then(sunriseTime => {
     if (sunriseTime) {
-        setInterval(() => scheduleWakeUp(sunriseTime), 600000);
+        setInterval(() => scheduleWakeUp(sunriseTime), 30000);
     }
 });
 

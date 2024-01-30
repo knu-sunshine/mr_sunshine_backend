@@ -65,6 +65,7 @@ const controlAutoMode = async (devices) => {
     const deviceList = await findDevicesDID(devices);
     console.log(`SID : ${SID}, deviceList : ${deviceList}`);
     const MQTT_TOPIC = `sensor/${SID}`;
+    console.log('auto mode has been started.');
 
     const messageHandler = async (topic, message) => {
         if (!autoModeActive) return; // Return immediately if auto mode is disabled
@@ -89,6 +90,8 @@ const controlAutoMode = async (devices) => {
                     console.log("did : ", deviceId, "sensor_value : ", sensorValue, " , current_value : ", deviceValue, " , sending_value : ", sendingValue);
                     await controlDeviceValue(deviceId, deviceValue, sendingValue);
                     await insertDeviceValue(deviceId, sendingValue); // save state to DB
+                } else if (sensorValue === goalValue){
+                    console.log("sensorValue is equal to goalValue.");
                 }
             }
         } catch (error) {

@@ -1,6 +1,7 @@
 const LATITUDE = 12.9715987;
 const LONGITUDE = 77.5945627;
-const SUNRISE_URL = `https://api.sunrisesunset.io/json?lat=${LATITUDE}&lng=${LONGITUDE}`;
+//const SUNRISE_URL = `https://api.sunrisesunset.io/json?lat=${LATITUDE}&lng=${LONGITUDE}`;
+const SUNRISE_URL = new URL(`https://65b871d446324d531d563756.mockapi.io/device/getSunriseTime/sunrise`);
 const axios = require('axios');
 const Device = require('../../database/models/deviceModel');
 const DeviceValue = require('../../database/models/deviceValueModel');
@@ -183,9 +184,10 @@ const testWakeUpValue = async (deviceId, value) => {
     let statusOfDB_deviceValue = checkDB_deviceValue(deviceId); //Check DB_deviceValue has the DID
 
     if (statusOfDID && statusOfDB_device && statusOfDB_deviceValue) {
-        let currentValue = findCurrentValue(deviceId); //Find currenValue of the DID
+        let currentValue = await findCurrentValue(deviceId); //Find currenValue of the DID
         if (await controlDeviceValue(deviceId, currentValue, value)) {
             console.log('testWakeUpValue success');
+            setTimeout(() => {controlDeviceValue(deviceId, value, currentValue)}, 5000);
         } else {
             console.log(`network error with IoT`)
             const error = new Error('network error with IoT');
@@ -294,9 +296,16 @@ const turnOffWakeUp = async (deviceId) => {
 
 const getSunriseTime = async () => {
     try {
-        const response = await axios.get(SUNRISE_URL); //Get API data
-        const sunriseTime = response.data.results.sunrise;
-        return sunriseTime;
+        const response = await fetch(SUNRISE_URL, {
+            method: 'GET',
+            headers: { 'content-type': 'application/json' },
+        }).then(res => {
+            if (res.ok) {
+                return res.json();
+            }
+        });
+        console.log(response);
+        return response[0].sunrise;
     } catch (error) {
         console.error('일출 시간 조회 중 오류:', error);
         throw error;
@@ -306,7 +315,7 @@ const getSunriseTime = async () => {
 const wakeUp = async () => {
     try {
         const devices = await Device.find({ isWakeUpOn: true }); //Find Device where isWakeUpOn is true
-        //console.log(devices);
+        console.log(devices);
         for (let device of devices) {
             let currentValue = findCurrentValue(device.deviceId);
             if (await controlDeviceValue(device.deviceId, currentValue, device.wakeUpValue)) {
