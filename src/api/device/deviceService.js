@@ -187,7 +187,7 @@ const testWakeUpValue = async (deviceId, value) => {
         let currentValue = await findCurrentValue(deviceId); //Find currenValue of the DID
         if (await controlDeviceValue(deviceId, currentValue, value)) {
             console.log('testWakeUpValue success');
-            setTimeout(() => {controlDeviceValue(deviceId, value, currentValue)}, 5000);
+            setTimeout( async () => {await controlDeviceValue(deviceId, value, currentValue)}, 5000);
         } else {
             console.log(`network error with IoT`)
             const error = new Error('network error with IoT');

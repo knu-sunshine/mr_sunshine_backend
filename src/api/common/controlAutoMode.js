@@ -65,7 +65,7 @@ const controlAutoMode = async (devices) => {
     const deviceList = await findDevicesDID(devices);
     console.log(`SID : ${SID}, deviceList : ${deviceList}`);
     const MQTT_TOPIC = `sensor/${SID}`;
-    automModeActive = true;
+    autoModeActive = true;
     console.log('auto mode has been started.');
 
     const messageHandler = async (topic, message) => {
@@ -79,15 +79,15 @@ const controlAutoMode = async (devices) => {
                 let deviceValue = await findCurrentDeviceValue(deviceId); //asynchronous processing
                 let sendingValue = deviceValue;
                 if (sensorValue > goalValue){
-                    if(sendingValue - 5 >= 0)
-                        sendingValue -= 5;
+                    if(sendingValue - 10 >= 0)
+                        sendingValue -= 10;
                     console.log("did : ", deviceId,  "sensor_value : ", sensorValue, " , current_value : ", deviceValue, " , sending_value : ", sendingValue);
                     await controlDeviceValue(deviceId, deviceValue, sendingValue);
                     await insertDeviceValue(deviceId, sendingValue); // save state to DB
                 }
                 else if (sensorValue < goalValue){
-                    if(sendingValue + 5 <= 100)
-                        sendingValue += 5;
+                    if(sendingValue + 10 <= 100)
+                        sendingValue += 10;
                     console.log("did : ", deviceId, "sensor_value : ", sensorValue, " , current_value : ", deviceValue, " , sending_value : ", sendingValue);
                     await controlDeviceValue(deviceId, deviceValue, sendingValue);
                     await insertDeviceValue(deviceId, sendingValue); // save state to DB
