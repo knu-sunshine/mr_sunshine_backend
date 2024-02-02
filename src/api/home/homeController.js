@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const homeService = require('./homeService');
 const axios = require('axios');
+const SUNRISE_URL = new URL(`https://65b871d446324d531d563756.mockapi.io/device/getSunriseTime/sunrise`);
 const errorHandler = require('../../middleware/errorHandler');
 
 router.use(errorHandler);
@@ -65,9 +66,30 @@ const getSunTime = async(req, res) => {
     });
 };
 
-const getSunriseTime = async(req,res)=>{
-  return sunrise;
-}
+const getSunriseTime = async (req, res) => {
+  try {
+      const response = await fetch(SUNRISE_URL, {
+          method: 'GET',
+          headers: { 'content-type': 'application/json' },
+      }).then(res => {
+          if (res.ok) {
+              return res.json();
+          }
+      });
+      console.log(response);
+      let sunrise = response[0].sunrise;
+      let sunset = response[1].sunrise;
+      console.log(sunrise, sunset);
+      res.status(200).json({sunrise, sunset});
+  } catch (error) {
+      console.error('일출 시간 조회 중 오류:', error);
+      throw error;
+  }
+};
+
+// const getSunriseTime = async(req,res)=>{
+//   return sunrise;
+// }
 
 const getSunsetTime = async(req,res)=>{
   return sunset;
@@ -76,7 +98,7 @@ const getSunsetTime = async(req,res)=>{
 // URL MAPPING
 router.post('/addroom', addRoom);
 router.get('/getroomlist', getRoomList);
-router.get('/sun', getSunTime);
+router.get('/sun', getSunriseTime);
 
 // Error handling middleware
 router.use(errorHandler);

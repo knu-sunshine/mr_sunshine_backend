@@ -1,7 +1,7 @@
 const DeviceValue = require('../../database/models/deviceValueModel');
 const mqtt = require('../../../app');
 const controlDeviceValue = require('./controlDeviceValue');
-const goalValue = 25;
+const goalValue = 15;
 let autoModeActive = true;
 
 const findSensorDID = async (devices) => {
